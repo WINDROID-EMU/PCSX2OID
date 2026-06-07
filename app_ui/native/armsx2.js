@@ -107,6 +107,58 @@ export async function convertIsoToChd(path) {
   return safeCall(() => Native.convertIsoToChd(path), -1);
 }
 
+// ─── Cheats ──────────────────────────────────────────────────────────────────
+
+/**
+ * Retorna informações do jogo atualmente em execução.
+ * @returns {{ serial: string, crc: string, title: string, databaseSize: number } | null}
+ */
+export async function getGameInfo() {
+  return safeCall(() => Native.getGameInfo(), null);
+}
+
+/**
+ * Retorna a lista de cheats do jogo atual (baseado no serial+CRC lidos nativamente).
+ * @returns {Array<{ name: string, codes: string, enabled: boolean, author: string }> | null}
+ */
+export async function getCheats() {
+  return safeCall(() => Native.getCheats(), []);
+}
+
+/**
+ * Salva a lista de cheats para o jogo atual e os recarrega no emulador.
+ * Apenas cheats com enabled=true são escritos no .pnach.
+ * @param {Array<{ name: string, codes: string, enabled: boolean, author?: string }>} cheats
+ * @returns {boolean}
+ */
+export async function saveCheats(cheats) {
+  return safeCall(() => Native.saveCheats(cheats), false);
+}
+
+/**
+ * Recarrega os cheats do disco e reaplica ao emulador sem fechar o jogo.
+ * @returns {boolean}
+ */
+export async function reloadCheats() {
+  return safeCall(() => Native.reloadCheats(), false);
+}
+
+/**
+ * Verifica online se existe arquivo de cheat para o jogo atual.
+ * @returns {boolean}
+ */
+export async function checkCheatsOnline() {
+  return safeCall(() => Native.checkCheatsOnline(), false);
+}
+
+/**
+ * Baixa o arquivo de cheat para o jogo atual.
+ * @returns {{ success: boolean, cheatCount?: number, error?: string }}
+ */
+export async function downloadCheats() {
+  return safeCall(() => Native.downloadCheats(), { success: false, error: 'unknown' });
+}
+
 export default {
   isAvailable,
   getSetting,
@@ -126,6 +178,13 @@ export default {
   logoutDiscord,
   setPadVibration,
   convertIsoToChd,
+  // cheats
+  getGameInfo,
+  getCheats,
+  saveCheats,
+  reloadCheats,
+  checkCheatsOnline,
+  downloadCheats,
   subscribeToRetroAchievements,
   subscribeToRetroAchievementsLogin,
   subscribeToDiscord,

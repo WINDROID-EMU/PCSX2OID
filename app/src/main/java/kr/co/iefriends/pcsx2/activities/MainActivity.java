@@ -118,6 +118,9 @@ import kr.co.iefriends.pcsx2.input.view.DPadView;
 import kr.co.iefriends.pcsx2.input.view.JoystickView;
 import kr.co.iefriends.pcsx2.input.view.PSButtonView;
 import kr.co.iefriends.pcsx2.input.view.PSShoulderButtonView;
+import kr.co.iefriends.pcsx2.utils.CheatDatabase;
+import kr.co.iefriends.pcsx2.utils.CheatManager;
+import kr.co.iefriends.pcsx2.utils.CheatManagerDialog;
 import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
 import kr.co.iefriends.pcsx2.utils.DebugLog;
 import kr.co.iefriends.pcsx2.utils.DeviceProfiles;
@@ -2277,6 +2280,14 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        MaterialButton btnManageCheats = findViewById(R.id.drawer_btn_manage_cheats);
+        if (btnManageCheats != null) {
+            btnManageCheats.setOnClickListener(v -> {
+                closeInGameDrawer();
+                openCheatManager();
+            });
+        }
+
         MaterialButton btnImportCheats = findViewById(R.id.drawer_btn_import_cheats);
         if (btnImportCheats != null) {
             btnImportCheats.setOnClickListener(v -> {
@@ -3420,6 +3431,40 @@ public class MainActivity extends AppCompatActivity {
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    /**
+     * Abre o gerenciador de cheats para o jogo atualmente em execução.
+     * Identifica o jogo pelo serial e CRC via NativeApp, carrega os cheats
+     * do arquivo .pnach correspondente e exibe o CheatManagerDialog.
+     */
+    private void openCheatManager() {
+        try {
+            String serial = NativeApp.getGameSerial();
+            int crc = NativeApp.getGameCRC();
+
+            if (android.text.TextUtils.isEmpty(serial) || crc == 0) {
+                Toast.makeText(this,
+                        "Nenhum jogo em execução. Inicie um jogo primeiro.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Resolve o título pelo banco de dados ou usa o serial como fallback
+            String title = CheatDatabase.getTitleBySerial(serial);
+            if (android.text.TextUtils.isEmpty(title)) {
+                title = serial;
+            }
+
+            CheatManagerDialog dialog = CheatManagerDialog.newInstance(serial, crc, title);
+            dialog.show(getSupportFragmentManager(), CheatManagerDialog.TAG);
+        } catch (Throwable t) {
+            try {
+                Toast.makeText(this,
+                        "Erro ao abrir gerenciador de cheats: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+            } catch (Throwable ignored) {}
         }
     }
 
