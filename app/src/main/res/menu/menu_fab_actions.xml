@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:visibility="gone">
     <item
         android:id="@+id/menu_convert_iso_chd"
+        android:icon="@drawable/ic_cd_24"
         android:title="@string/home_fab_convert_iso_to_chd"
-        android:icon="@drawable/ic_cd_24" />
+        android:visibility="gone" />
 </menu>

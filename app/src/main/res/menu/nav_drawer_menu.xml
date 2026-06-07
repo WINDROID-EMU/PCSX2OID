@@ -5,23 +5,27 @@
 		<item
 			android:id="@+id/menu_boot_bios"
 			android:icon="@drawable/ic_cd_24"
-			android:title="@string/home_nav_boot_bios" />
+			android:title="@string/home_nav_boot_bios"
+			android:visibility="gone" />
 
 		<item
 			android:id="@+id/menu_manage_bios"
 			android:icon="@drawable/ic_cd_24"
-			android:title="@string/home_nav_bios" />
+			android:title="@string/home_nav_bios"
+			android:visibility="visible" />
 
 		<item
 			android:id="@+id/menu_run_elf"
 			android:icon="@drawable/ic_folder_24"
-			android:title="@string/settings_run_elf" />
+			android:title="@string/settings_run_elf"
+			android:visibility="gone" />
 
 		<item android:title="@string/home_nav_section_library" android:enabled="false" />
 		<item
 			android:id="@+id/menu_choose_folder"
 			android:icon="@drawable/ic_folder_24"
-			android:title="@string/home_nav_choose_games_folder" />
+			android:title="@string/home_nav_choose_games_folder"
+			android:visibility="gone" />
 		<item
 			android:id="@+id/menu_refresh"
 			android:icon="@drawable/ic_refresh_24"
@@ -39,11 +43,13 @@
 		<item
 			android:id="@+id/menu_bg_landscape"
 			android:icon="@drawable/ic_image_24"
-			android:title="@string/home_nav_choose_landscape_background" />
+			android:title="@string/home_nav_choose_landscape_background"
+			android:visibility="gone" />
 		<item
 			android:id="@+id/menu_bg_portrait"
 			android:icon="@drawable/ic_image_24"
-			android:title="@string/home_nav_choose_portrait_background" />
+			android:title="@string/home_nav_choose_portrait_background"
+			android:visibility="gone" />
 		<item
 			android:id="@+id/menu_bg_clear"
 			android:icon="@drawable/ic_refresh_24"

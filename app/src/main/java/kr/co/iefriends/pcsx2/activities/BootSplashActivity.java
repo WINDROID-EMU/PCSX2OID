@@ -35,44 +35,11 @@ public class BootSplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!App.consumeBootSplashPlayToken()) {
-            launchMainAndFinish();
-            return;
-        }
-        getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
-        setContentView(R.layout.activity_boot_splash);
-        rootView = findViewById(R.id.boot_splash_root);
-        VideoView videoView = findViewById(R.id.boot_splash_video);
-
-        if (rootView != null) {
-            rootView.setOnClickListener(v -> launchMainAndFinish());
-            rootView.postDelayed(timeoutRunnable, HARD_TIMEOUT_MS);
-        }
-        if (videoView != null) {
-            videoView.setOnClickListener(v -> launchMainAndFinish());
-            Uri videoUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.boot_intro);
-            videoView.setVideoURI(videoUri);
-            videoView.setOnPreparedListener(mp -> {
-                mp.setLooping(false);
-                videoView.start();
-            });
-            videoView.setOnCompletionListener(mp -> launchMainAndFinish());
-            videoView.setOnErrorListener((mp, what, extra) -> {
-                launchMainAndFinish();
-                return true;
-            });
-        } else {
-            launchMainAndFinish();
-        }
-
-        applyImmersiveUi();
+        launchMainAndFinish();
     }
 
     @Override
     protected void onDestroy() {
-        if (rootView != null) {
-            rootView.removeCallbacks(timeoutRunnable);
-        }
         super.onDestroy();
     }
 
@@ -96,10 +63,6 @@ public class BootSplashActivity extends AppCompatActivity {
             return;
         }
         launchedMain = true;
-
-        if (rootView != null) {
-            rootView.removeCallbacks(timeoutRunnable);
-        }
 
         Intent launch = new Intent(this, MainActivity.class);
         Intent source = getIntent();
