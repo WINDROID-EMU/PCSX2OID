@@ -45,8 +45,7 @@ public class OnboardingActivity extends AppCompatActivity {
     static final String EXTRA_STORAGE_CONFIGURED = "storage_configured";
 
     private static final int PAGE_WELCOME = 0;
-    private static final int PAGE_BIOS = 1;
-    private static final int PAGE_STORAGE = 2;
+    private static final int PAGE_STORAGE = 1;
 
     private ViewPager2 viewPager;
     private LinearLayout dotsContainer;
@@ -451,7 +450,6 @@ public class OnboardingActivity extends AppCompatActivity {
 
         private static final int[] PAGE_LAYOUTS = {
                 R.layout.onboarding_page_welcome,
-                R.layout.onboarding_page_bios,
                 R.layout.onboarding_page_storage
         };
 
@@ -467,7 +465,6 @@ public class OnboardingActivity extends AppCompatActivity {
 
         void setBiosConfigured(boolean configured) {
             this.biosConfigured = configured;
-            notifyItemChanged(PAGE_BIOS);
         }
 
         void setStorageStatus(boolean configured, String statusText) {

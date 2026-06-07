@@ -762,7 +762,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREF_COVERS_URL = "covers_url_template";
     private static final String PREF_MANUAL_COVER_PREFIX = "manual_cover:"; 
     private String getCoversUrlTemplate() {
-        return getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREF_COVERS_URL, "");
+        return getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREF_COVERS_URL, "https://raw.githubusercontent.com/xlenore/ps2-covers/main/covers/default/${serial}.jpg");
     }
     private void setCoversUrlTemplate(String s) {
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putString(PREF_COVERS_URL, s == null ? "" : s).apply();
@@ -5676,6 +5676,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if (name == null) name = "Unknown";
                     String lower = name.toLowerCase();
+                    if ((lower.startsWith("scph") && lower.endsWith(".bin")) || 
+                        lower.equals("rom1.bin") || lower.equals("rom2.bin") || 
+                        lower.equals("erom.bin") || lower.endsWith("bios.bin")) {
+                        continue;
+                    }
                     boolean matchExt = false;
                     for (String ext : EXTS) { if (lower.endsWith(ext)) { matchExt = true; break; } }
                     boolean matchMime = false;
