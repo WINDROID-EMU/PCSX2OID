@@ -4,40 +4,40 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
-	android:layout_margin="8dp"
+	android:layout_margin="2dp"
 	android:background="@drawable/bg_game_tile"
-	android:focusable="true"
 	android:clickable="true"
+	android:focusable="true"
 	android:focusableInTouchMode="true">
 
 	<ImageView
 		android:id="@+id/img_cover"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
-	android:scaleType="fitCenter"
-	android:adjustViewBounds="true"
-		app:layout_constraintTop_toTopOf="parent"
-		app:layout_constraintStart_toStartOf="parent"
+		android:adjustViewBounds="true"
+		android:scaleType="fitCenter"
+		app:layout_constraintDimensionRatio="2:3"
 		app:layout_constraintEnd_toEndOf="parent"
-		app:layout_constraintDimensionRatio="2:3"/>
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent" />
 
 	<!-- Overlay fallback: show filename centered when no cover image is available -->
 	<TextView
 		android:id="@+id/tv_cover_fallback"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
+		android:ellipsize="end"
 		android:gravity="center"
-	android:textColor="?attr/colorOnSurface"
+		android:maxLines="4"
+		android:padding="12dp"
+		android:textColor="?attr/colorOnSurface"
 		android:textSize="14sp"
 		android:textStyle="bold"
-		android:maxLines="4"
-		android:ellipsize="end"
-		android:padding="12dp"
 		android:visibility="gone"
-		app:layout_constraintTop_toTopOf="@+id/img_cover"
 		app:layout_constraintBottom_toBottomOf="@+id/img_cover"
+		app:layout_constraintEnd_toEndOf="@+id/img_cover"
 		app:layout_constraintStart_toStartOf="@+id/img_cover"
-		app:layout_constraintEnd_toEndOf="@+id/img_cover"/>
+		app:layout_constraintTop_toTopOf="@+id/img_cover" />
 
 	<TextView
 		android:id="@+id/tv_title"

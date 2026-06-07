@@ -3,19 +3,22 @@
             xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_toggle_view"
-        android:title="@string/home_toolbar_toggle_view"
         android:icon="@drawable/ic_view_list_24"
+        android:title="@string/home_toolbar_toggle_view"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_toggle_search"
         android:icon="@drawable/ic_search_24"
         android:title="@string/home_toolbar_search"
-        android:visibility="gone"
+        android:visibility="invisible"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_open_rn"
         android:icon="@drawable/ic_settings_24"
         android:title="@string/home_toolbar_rn_activity"
-        android:visibility="gone"
+        android:visibility="invisible"
+        android:visible="false"
         app:showAsAction="always" />
 </menu>

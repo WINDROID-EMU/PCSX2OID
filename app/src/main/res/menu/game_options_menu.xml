@@ -2,14 +2,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/choose_cover"
+        android:orderInCategory="100"
         android:title="@string/cover_action_choose"
-        android:orderInCategory="100"/>
+        android:visibility="invisible" />
     <item
         android:id="@+id/remove_chosen_cover"
+        android:orderInCategory="100"
         android:title="@string/cover_action_remove"
-        android:orderInCategory="100"/>
+        android:visibility="invisible" />
     <item
         android:id="@+id/per_game_settings"
+        android:orderInCategory="100"
         android:title="@string/per_game_settings_button"
-        android:orderInCategory="100"/>
+        android:visibility="invisible" />
 </menu>
