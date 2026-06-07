@@ -259,6 +259,25 @@ public class OnboardingActivity extends AppCompatActivity {
     private boolean hasBios() {
         File base = DataDirectoryManager.getDataRoot(getApplicationContext());
         File biosDir = new File(base, "bios");
+        
+        File bundledBios = new File(biosDir, "scph3004R.bin");
+        if (!bundledBios.exists()) {
+            try {
+                if (!biosDir.exists()) biosDir.mkdirs();
+                try (InputStream in = getApplicationContext().getAssets().open("bios/scph3004R.bin");
+                     OutputStream out = new FileOutputStream(bundledBios)) {
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    out.flush();
+                    try {
+                        NativeApp.setSetting("Filenames", "BIOS", "string", bundledBios.getAbsolutePath());
+                    } catch (Throwable ignored) {}
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
         if (!biosDir.exists()) {
             return false;
         }
