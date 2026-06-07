@@ -101,7 +101,7 @@ public class CheatManagerDialog extends DialogFragment {
         // ── Cabeçalho ─────────────────────────────────────────────────────────
         TextView tvTitle = new TextView(ctx);
         tvTitle.setTextSize(18f);
-        tvTitle.setTextColor(resolveColor(ctx, kr.co.iefriends.pcsx2.R.attr.colorPrimary));
+        tvTitle.setTextColor(resolveColor(ctx, com.google.android.material.R.attr.colorOnSurface));
         tvTitle.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         tvTitle.setPadding(0, 0, 0, dp(ctx, 2));
 
