@@ -73,18 +73,21 @@ public class JoystickView extends View {
     }
     
     private void init() {
+        // Windroid-style: very subtle base fill
         basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        basePaint.setColor(0x0DFFFFFF); 
+        basePaint.setColor(0x1AFFFFFF); 
         basePaint.setStyle(Paint.Style.FILL);
 
+        // Windroid-style: visible knob fill
         knobPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        knobPaint.setColor(0x26FFFFFF); 
+        knobPaint.setColor(0x4DFFFFFF); 
         knobPaint.setStyle(Paint.Style.FILL);
 
+        // Windroid-style: thick white stroke outline
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(0x66FFFFFF); 
+        strokePaint.setColor(0xCCFFFFFF); 
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(2.0f);
+        strokePaint.setStrokeWidth(4.0f);
         
         knobPosition = new PointF();
     }
@@ -124,8 +127,9 @@ public class JoystickView extends View {
         
         centerX = w / 2f;
         centerY = h / 2f;
-        baseRadius = Math.min(w, h) / 2f - 20; 
-        knobRadius = baseRadius * 0.3f;
+        baseRadius = Math.min(w, h) / 2f - 10; 
+        // Windroid-style: larger knob relative to base (radius/4 ratio)
+        knobRadius = baseRadius * 0.45f;
         
         knobPosition.set(centerX, centerY);
         updateDrawableBounds();

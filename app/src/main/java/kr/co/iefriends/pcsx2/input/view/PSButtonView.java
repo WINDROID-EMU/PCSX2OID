@@ -50,18 +50,21 @@ public class PSButtonView extends View {
     }
     
     private void init() {
+        // Windroid-style: semi-transparent fill
         basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        basePaint.setColor(0x60FFFFFF);
+        basePaint.setColor(0x33FFFFFF);
         basePaint.setStyle(Paint.Style.FILL);
         
+        // Windroid-style: brighter fill when pressed
         pressedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        pressedPaint.setColor(0xFFFFFFFF);
+        pressedPaint.setColor(0x80FFFFFF);
         pressedPaint.setStyle(Paint.Style.FILL);
         
+        // Windroid-style: thick white stroke outline
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(0x80000000);
+        strokePaint.setColor(0xCCFFFFFF);
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(2.0f);
+        strokePaint.setStrokeWidth(4.0f);
         
         symbolPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         symbolPaint.setTextAlign(Paint.Align.CENTER);
@@ -74,7 +77,8 @@ public class PSButtonView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         
-        float padding = Math.min(w, h) * 0.1f;
+        // Windroid-style: less padding for larger visual area
+        float padding = Math.min(w, h) * 0.05f;
         bounds.set(padding, padding, w - padding, h - padding);
         
         symbolPaint.setTextSize(Math.min(w, h) * 0.4f);
@@ -104,7 +108,8 @@ public class PSButtonView extends View {
         Paint fillPaint = isPressed ? pressedPaint : basePaint;
         
         if (isRectangular) {
-            float cornerRadius = Math.min(bounds.width(), bounds.height()) * 0.1f;
+            // Windroid-style: larger rounded corners for rectangles
+            float cornerRadius = Math.min(bounds.width(), bounds.height()) * 0.25f;
             canvas.drawRoundRect(bounds, cornerRadius, cornerRadius, fillPaint);
             canvas.drawRoundRect(bounds, cornerRadius, cornerRadius, strokePaint);
         } else {

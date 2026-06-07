@@ -83,21 +83,21 @@ public class DPadView extends View {
     }
     
     private void init() {
-        // Base D-pad color
+        // Windroid-style: semi-transparent base fill
         basePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         basePaint.setColor(0x1AFFFFFF); 
         basePaint.setStyle(Paint.Style.FILL);
         
-        // Pressed state color
+        // Windroid-style: visible pressed fill
         pressedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        pressedPaint.setColor(0x4DFFFFFF); 
+        pressedPaint.setColor(0x66FFFFFF); 
         pressedPaint.setStyle(Paint.Style.FILL);
         
-        // Stroke for outline
+        // Windroid-style: thick white stroke outline
         strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        strokePaint.setColor(0x80FFFFFF); 
+        strokePaint.setColor(0xCCFFFFFF); 
         strokePaint.setStyle(Paint.Style.STROKE);
-        strokePaint.setStrokeWidth(3.0f);
+        strokePaint.setStrokeWidth(4.0f);
         
         bounds = new RectF();
         dpadPath = new Path();
@@ -161,8 +161,9 @@ public class DPadView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         
+        // Windroid-style: less padding
         float size = Math.min(w, h);
-        float padding = size * 0.1f;
+        float padding = size * 0.05f;
         float centerX = w / 2f;
         float centerY = h / 2f;
         
@@ -249,36 +250,91 @@ public class DPadView extends View {
 
         if (hasDirectionalIcons) {
             if (upDrawable != null) {
-                upDrawable.setAlpha(upPressed ? 255 : 180);
+                upDrawable.setAlpha(upPressed ? 255 : 160);
                 upDrawable.draw(canvas);
             }
             if (downDrawable != null) {
-                downDrawable.setAlpha(downPressed ? 255 : 180);
+                downDrawable.setAlpha(downPressed ? 255 : 160);
                 downDrawable.draw(canvas);
             }
             if (leftDrawable != null) {
-                leftDrawable.setAlpha(leftPressed ? 255 : 180);
+                leftDrawable.setAlpha(leftPressed ? 255 : 160);
                 leftDrawable.draw(canvas);
             }
             if (rightDrawable != null) {
-                rightDrawable.setAlpha(rightPressed ? 255 : 180);
+                rightDrawable.setAlpha(rightPressed ? 255 : 160);
                 rightDrawable.draw(canvas);
             }
         } else {
-            Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setColor(0xCCFFFFFF);
-            textPaint.setTextSize(bounds.width() * 0.12f);
-            textPaint.setTextAlign(Paint.Align.CENTER);
+            // Windroid-style: draw arrow triangles for each direction
+            Paint arrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            arrowPaint.setColor(0xCCFFFFFF);
+            arrowPaint.setStyle(Paint.Style.FILL);
+            arrowPaint.setStrokeJoin(Paint.Join.ROUND);
             
-            float textY = bounds.centerY() + textPaint.getTextSize() / 3;
+            float arrowSize = bounds.width() * 0.12f;
+            float cx = bounds.centerX();
+            float cy = bounds.centerY();
             
-            canvas.drawText("▲", bounds.centerX(), upRegion.centerY() + textPaint.getTextSize() / 3, textPaint);
-            canvas.drawText("▼", bounds.centerX(), downRegion.centerY() + textPaint.getTextSize() / 3, textPaint);
-            canvas.drawText("◀", leftRegion.centerX(), textY, textPaint);
-            canvas.drawText("▶", rightRegion.centerX(), textY, textPaint);
+            // Up arrow
+            Paint upArrowPaint = new Paint(arrowPaint);
+            if (upPressed) upArrowPaint.setAlpha(255); else upArrowPaint.setAlpha(160);
+            drawArrowUp(canvas, cx, upRegion.centerY(), arrowSize, upArrowPaint);
+            
+            // Down arrow
+            Paint downArrowPaint = new Paint(arrowPaint);
+            if (downPressed) downArrowPaint.setAlpha(255); else downArrowPaint.setAlpha(160);
+            drawArrowDown(canvas, cx, downRegion.centerY(), arrowSize, downArrowPaint);
+            
+            // Left arrow
+            Paint leftArrowPaint = new Paint(arrowPaint);
+            if (leftPressed) leftArrowPaint.setAlpha(255); else leftArrowPaint.setAlpha(160);
+            drawArrowLeft(canvas, leftRegion.centerX(), cy, arrowSize, leftArrowPaint);
+            
+            // Right arrow
+            Paint rightArrowPaint = new Paint(arrowPaint);
+            if (rightPressed) rightArrowPaint.setAlpha(255); else rightArrowPaint.setAlpha(160);
+            drawArrowRight(canvas, rightRegion.centerX(), cy, arrowSize, rightArrowPaint);
         }
     }
     
+    // Windroid-style arrow triangle drawing methods
+    private void drawArrowUp(Canvas canvas, float cx, float cy, float size, Paint paint) {
+        Path arrow = new Path();
+        arrow.moveTo(cx, cy - size);
+        arrow.lineTo(cx - size * 0.7f, cy + size * 0.5f);
+        arrow.lineTo(cx + size * 0.7f, cy + size * 0.5f);
+        arrow.close();
+        canvas.drawPath(arrow, paint);
+    }
+
+    private void drawArrowDown(Canvas canvas, float cx, float cy, float size, Paint paint) {
+        Path arrow = new Path();
+        arrow.moveTo(cx, cy + size);
+        arrow.lineTo(cx - size * 0.7f, cy - size * 0.5f);
+        arrow.lineTo(cx + size * 0.7f, cy - size * 0.5f);
+        arrow.close();
+        canvas.drawPath(arrow, paint);
+    }
+
+    private void drawArrowLeft(Canvas canvas, float cx, float cy, float size, Paint paint) {
+        Path arrow = new Path();
+        arrow.moveTo(cx - size, cy);
+        arrow.lineTo(cx + size * 0.5f, cy - size * 0.7f);
+        arrow.lineTo(cx + size * 0.5f, cy + size * 0.7f);
+        arrow.close();
+        canvas.drawPath(arrow, paint);
+    }
+
+    private void drawArrowRight(Canvas canvas, float cx, float cy, float size, Paint paint) {
+        Path arrow = new Path();
+        arrow.moveTo(cx + size, cy);
+        arrow.lineTo(cx - size * 0.5f, cy - size * 0.7f);
+        arrow.lineTo(cx - size * 0.5f, cy + size * 0.7f);
+        arrow.close();
+        canvas.drawPath(arrow, paint);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         float x = event.getX();

@@ -36,9 +36,9 @@ Qualquer outro website não é afiliado com ARMSX2.
 
 ## Baixar
 
-ARMSX2 está disponível na [Google Play Store](https://play.google.com/store/apps/details?id=come.nanodata.armsx2)
+ARMSX2 está disponível na [Google Play Store](https://play.google.com/store/apps/details?id=com.pcsx2oid.emu)
 
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Baixe pela Google Play" height="80"/>](https://play.google.com/store/apps/details?id=come.nanodata.armsx2)
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Baixe pela Google Play" height="80"/>](https://play.google.com/store/apps/details?id=com.pcsx2oid.emu)
 
 ## Afiliação
 

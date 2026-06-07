@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   emptyText: { marginBottom: 4 },
   cardContent: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8 },
-  cover: { width: 72, aspectRatio: 2 / 3, borderRadius: 10, marginRight: 4 },
+  cover: { width: 72, aspectRatio: 1, borderRadius: 10, marginRight: 4 },
   cardText: { flex: 1 },
   itemTitle: { marginBottom: 2 },
   gridWrapper: { gap: 12 },

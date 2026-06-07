@@ -53,7 +53,7 @@ android {
     flavorDimensions "distribution"
 
     defaultConfig {
-    applicationId "come.nanodata.armsx2"
+    applicationId "com.pcsx2oid.emu"
         minSdk 26
         targetSdk 35
         versionCode 22
