@@ -101,7 +101,7 @@ public class CheatManagerDialog extends DialogFragment {
         // ── Cabeçalho ─────────────────────────────────────────────────────────
         TextView tvTitle = new TextView(ctx);
         tvTitle.setTextSize(18f);
-        tvTitle.setTextColor(resolveColor(ctx, com.google.android.material.R.attr.colorPrimary));
+        tvTitle.setTextColor(resolveColor(ctx, kr.co.iefriends.pcsx2.R.attr.colorPrimary));
         tvTitle.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         tvTitle.setPadding(0, 0, 0, dp(ctx, 2));
 
@@ -138,7 +138,7 @@ public class CheatManagerDialog extends DialogFragment {
 
         btnDownload = new MaterialButton(ctx);
         btnDownload.setText("⬇  Baixar Cheats Online");
-        btnDownload.setTextAllCaps(false);
+        btnDownload.setAllCaps(false);
         LinearLayout.LayoutParams dlBtnParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         downloadRow.addView(btnDownload, dlBtnParams);
@@ -178,20 +178,20 @@ public class CheatManagerDialog extends DialogFragment {
         MaterialButton btnAdd = new MaterialButton(ctx, null,
                 com.google.android.material.R.attr.materialButtonOutlinedStyle);
         btnAdd.setText("+ Adicionar Cheat Manual");
-        btnAdd.setTextAllCaps(false);
+        btnAdd.setAllCaps(false);
         addFullWidthMargin(container, btnAdd, ctx, 0, 6);
         btnAdd.setOnClickListener(v -> showAddCheatDialog());
 
         MaterialButton btnSave = new MaterialButton(ctx);
         btnSave.setText("💾  Salvar e Aplicar");
-        btnSave.setTextAllCaps(false);
+        btnSave.setAllCaps(false);
         addFullWidthMargin(container, btnSave, ctx, 0, 6);
         btnSave.setOnClickListener(v -> saveAndApply());
 
         MaterialButton btnClose = new MaterialButton(ctx, null,
                 com.google.android.material.R.attr.materialButtonOutlinedStyle);
         btnClose.setText("Fechar");
-        btnClose.setTextAllCaps(false);
+        btnClose.setAllCaps(false);
         addFullWidthMargin(container, btnClose, ctx, 0, 0);
         btnClose.setOnClickListener(v -> dismiss());
 
