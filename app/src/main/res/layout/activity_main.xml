@@ -50,21 +50,22 @@
             android:gravity="center"
             android:orientation="horizontal"
             android:visibility="gone"
+            android:layout_marginBottom="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
             <kr.co.iefriends.pcsx2.input.view.PSButtonView
                 android:id="@+id/btn_pad_select"
-                android:layout_width="59dp"
-                android:layout_height="46dp"
-                android:layout_margin="5dp" />
+                android:layout_width="75dp"
+                android:layout_height="35dp"
+                android:layout_margin="8dp" />
 
             <kr.co.iefriends.pcsx2.input.view.PSButtonView
                 android:id="@+id/btn_pad_start"
-                android:layout_width="59dp"
-                android:layout_height="59dp"
-                android:layout_margin="5dp" />
+                android:layout_width="75dp"
+                android:layout_height="35dp"
+                android:layout_margin="8dp" />
 
         </LinearLayout>
 
@@ -72,28 +73,25 @@
             android:id="@+id/ll_pad_shoulders_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <kr.co.iefriends.pcsx2.input.view.PSShoulderButtonView
                 android:id="@+id/btn_pad_l2"
-                android:layout_width="51dp"
-                android:layout_height="52dp"
-                android:layout_margin="6dp"
+                android:layout_width="85dp"
+                android:layout_height="50dp"
+                android:layout_margin="4dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <kr.co.iefriends.pcsx2.input.view.PSShoulderButtonView
                 android:id="@+id/btn_pad_l1"
-                android:layout_width="51dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="6dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="6dp"
-                android:layout_marginBottom="6dp"
+                android:layout_width="85dp"
+                android:layout_height="50dp"
+                android:layout_margin="4dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_pad_l2" />
 
@@ -101,9 +99,7 @@
                 android:id="@+id/btn_pad_l3"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
+                android:layout_marginStart="12dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/btn_pad_l2"
                 app:layout_constraintTop_toTopOf="parent"
@@ -115,28 +111,25 @@
             android:id="@+id/ll_pad_shoulders_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="20dp"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <kr.co.iefriends.pcsx2.input.view.PSShoulderButtonView
                 android:id="@+id/btn_pad_r2"
-                android:layout_width="51dp"
-                android:layout_height="52dp"
-                android:layout_margin="6dp"
+                android:layout_width="85dp"
+                android:layout_height="50dp"
+                android:layout_margin="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <kr.co.iefriends.pcsx2.input.view.PSShoulderButtonView
                 android:id="@+id/btn_pad_r1"
-                android:layout_width="51dp"
-                android:layout_height="52dp"
-                android:layout_marginStart="6dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginEnd="6dp"
-                android:layout_marginBottom="6dp"
+                android:layout_width="85dp"
+                android:layout_height="50dp"
+                android:layout_margin="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_pad_r2" />
 
@@ -144,9 +137,7 @@
                 android:id="@+id/btn_pad_r3"
                 android:layout_width="55dp"
                 android:layout_height="55dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
+                android:layout_marginEnd="12dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/btn_pad_r2"
                 app:layout_constraintTop_toTopOf="parent"
@@ -158,18 +149,18 @@
             android:id="@+id/ll_pad_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <kr.co.iefriends.pcsx2.input.view.JoystickView
                 android:id="@+id/joystick_right"
-                android:layout_width="140dp"
-                android:layout_height="140dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="12dp"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginBottom="0dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -177,8 +168,8 @@
                 android:id="@+id/ll_pad_right_buttons"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="6dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="20dp"
                 android:gravity="center"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toTopOf="@id/joystick_right"
@@ -187,54 +178,54 @@
                 <!-- Top button (Triangle/Y) -->
                 <kr.co.iefriends.pcsx2.input.view.PSButtonView
                     android:id="@+id/btn_pad_y"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="-15dp" />
+                    android:layout_width="65dp"
+                    android:layout_height="65dp"
+                    android:layout_marginBottom="-10dp" />
 
                 <!-- Middle row (Square/X and Circle/B) -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="-15dp">
+                    android:layout_marginBottom="-10dp">
 
                     <kr.co.iefriends.pcsx2.input.view.PSButtonView
                         android:id="@+id/btn_pad_x"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginEnd="2dp" />
+                        android:layout_width="65dp"
+                        android:layout_height="65dp"
+                        android:layout_marginEnd="25dp" />
 
                     <kr.co.iefriends.pcsx2.input.view.PSButtonView
                         android:id="@+id/btn_pad_b"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp" />
+                        android:layout_width="65dp"
+                        android:layout_height="65dp" />
                 </LinearLayout>
 
                 <!-- Bottom button (Cross/A) -->
                 <kr.co.iefriends.pcsx2.input.view.PSButtonView
                     android:id="@+id/btn_pad_a"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp" />
+                    android:layout_width="65dp"
+                    android:layout_height="65dp" />
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <kr.co.iefriends.pcsx2.input.view.JoystickView
             android:id="@+id/joystick_left"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginStart="20dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="20dp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
         <kr.co.iefriends.pcsx2.input.view.DPadView
             android:id="@+id/dpad_view"
-            android:layout_width="105dp"
-            android:layout_height="105dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="6dp"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="20dp"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/joystick_left"
             app:layout_constraintStart_toStartOf="parent" />
