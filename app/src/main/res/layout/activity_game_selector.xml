@@ -17,26 +17,27 @@
 			android:id="@+id/bg_image"
 			android:layout_width="0dp"
 			android:layout_height="0dp"
-			android:scaleType="centerCrop"
 			android:contentDescription="@null"
+			android:scaleType="centerCrop"
 			android:visibility="gone"
-			app:layout_constraintTop_toTopOf="parent"
 			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintEnd_toEndOf="parent"/>
+			app:layout_constraintTop_toTopOf="parent" />
 
 		<com.google.android.material.appbar.MaterialToolbar
 			android:id="@+id/toolbar"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:background="?attr/colorSurface"
-			android:theme="@style/ThemeOverlay.Material3.ActionBar"
-			app:title="@string/home_game_selector_title"
-			app:titleTextColor="?attr/colorOnSurface"
-			app:navigationIconTint="?attr/colorOnSurface"
-			app:layout_constraintTop_toTopOf="parent"
+			android:background="?android:attr/windowBackground"
+			android:visibility="visible"
+			android:elevation="0dp"
+			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintEnd_toEndOf="parent" />
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:navigationIconTint="?attr/colorOnSurface"
+			app:title=""
+			app:titleTextColor="?attr/colorOnSurface" />
 
 		<!-- Search bar -->
 		<EditText
@@ -51,7 +52,7 @@
 			android:textColorHint="?attr/colorOnSurfaceVariant"
 			android:background="?attr/colorSurfaceVariant"
 			android:visibility="gone"
-			app:layout_constraintTop_toBottomOf="@id/toolbar"
+			app:layout_constraintTop_toTopOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -62,19 +63,20 @@
 			android:layout_height="0dp"
 			android:gravity="center"
 			android:orientation="vertical"
-			app:layout_constraintTop_toBottomOf="@id/et_search"
-			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintBottom_toTopOf="@id/toolbar"
+			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintEnd_toEndOf="parent">
+			app:layout_constraintTop_toTopOf="parent">
 
 			<TextView
 				android:id="@+id/tv_empty"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:layout_marginBottom="16dp"
 				android:text="@string/home_choose_folder_empty"
 				android:textColor="?attr/colorOnSurfaceVariant"
 				android:textSize="18sp"
-				android:layout_marginBottom="16dp"/>
+				android:visibility="gone" />
 
 			<com.google.android.material.button.MaterialButton
 				android:id="@+id/btn_choose_folder"
@@ -82,7 +84,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/home_nav_choose_games_folder"
-				android:textColor="?attr/colorPrimary"/>
+				android:textColor="?attr/colorPrimary" />
 		</LinearLayout>
 
 		<androidx.recyclerview.widget.RecyclerView
@@ -93,7 +95,7 @@
 			android:clipToPadding="false"
 			android:visibility="gone"
 			app:layout_constraintTop_toBottomOf="@id/et_search"
-			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintBottom_toTopOf="@id/toolbar"
 			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -102,13 +104,14 @@
 			android:id="@+id/fab_actions"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_margin="16dp"
 			android:contentDescription="@string/home_fab_actions_content_description"
 			android:src="@drawable/ic_cd_24"
-			app:tint="?attr/colorOnPrimary"
+			android:visibility="gone"
 			app:backgroundTint="?attr/colorPrimary"
 			app:layout_constraintBottom_toBottomOf="parent"
 			app:layout_constraintEnd_toEndOf="parent"
-			android:layout_margin="16dp"/>
+			app:tint="?attr/colorOnPrimary" />
 	</androidx.constraintlayout.widget.ConstraintLayout>
 
 	<com.google.android.material.navigation.NavigationView

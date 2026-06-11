@@ -41,9 +41,6 @@ dependencyResolutionManagement {
         if (enableRN) {
             maven { url("$rootDir/../node_modules/react-native/android") }
         }
-        flatDir {
-            dirs("$rootDir/app/libs")
-        }
     }
 }
 

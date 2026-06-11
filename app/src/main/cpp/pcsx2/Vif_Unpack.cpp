@@ -176,6 +176,7 @@ alignas(16) const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =
 //----------------------------------------------------------------------------
 
 _vifT void vifUnpackSetup(const u32 *data) {
+	nVif[idx].bSize = 0;
 
 	vifStruct& vifX = GetVifX;
 
@@ -336,6 +337,11 @@ _vifT int nVifUnpack(const u8* data)
 	{
 		if (v.bSize) // Last transfer was partial
 		{
+			if (v.bSize + size > sizeof(v.buffer))
+			{
+				DevCon.Warning("nVifUnpack: buffer overflow in full transfer! bSize=%u, size=%u, max=%zu", v.bSize, size, sizeof(v.buffer));
+				size = sizeof(v.buffer) - v.bSize;
+			}
 			memcpy(&v.buffer[v.bSize], data, size);
 			v.bSize += size;
 			size = v.bSize;
@@ -365,6 +371,11 @@ _vifT int nVifUnpack(const u8* data)
 	}
 	else // Partial Transfer
 	{
+		if (v.bSize + size > sizeof(v.buffer))
+		{
+			DevCon.Warning("nVifUnpack: buffer overflow in partial transfer! bSize=%u, size=%u, max=%zu", v.bSize, size, sizeof(v.buffer));
+			size = sizeof(v.buffer) - v.bSize;
+		}
 		memcpy(&v.buffer[v.bSize], data, size);
 		v.bSize += size;
 		vif.tag.size -= ret;

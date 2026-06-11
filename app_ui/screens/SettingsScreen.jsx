@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Appbar, Card, Divider, List, SegmentedButtons, Switch, Text } from 'react-native-paper';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import SwipeableSlider from '../components/SwipeableSlider.jsx';
@@ -56,7 +56,7 @@ function SettingsScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Appbar.Header mode="small" elevated style={{ backgroundColor: colors.surface }}>
         <Appbar.Content title="Settings" subtitle="Paper-styled controls" />
       </Appbar.Header>
@@ -278,7 +278,7 @@ function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

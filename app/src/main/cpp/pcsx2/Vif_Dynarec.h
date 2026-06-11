@@ -20,8 +20,8 @@ _vifT extern void dVifUnpack(const u8* data, bool isFill);
 struct nVifStruct
 {
 	// Buffer for partial transfers (should always be first to ensure alignment)
-	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
-	alignas(16) u8 buffer[256*16];
+	// Maximum buffer size is increased to 2048 * 16 (quadword) to prevent overflows
+	alignas(16) u8 buffer[2048*16];
 	u32            bSize; // Size of 'buffer'
 
 	// VIF0 or VIF1 - provided for debugging helpfulness only, and is generally unused.

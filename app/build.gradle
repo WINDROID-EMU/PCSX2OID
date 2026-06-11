@@ -177,11 +177,6 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
 
 if (enableRN) {
     react {
@@ -205,7 +200,7 @@ dependencies {
         implementation 'com.facebook.react:hermes-android:0.74.3'
     }
     if (isDiscordSdkAvailable) {
-        implementation(name: 'discord_partner_sdk', ext: 'aar')
+        implementation files('libs/discord_partner_sdk.aar')
     } else {
         logger.lifecycle("[app] Discord SDK not found; Discord integration will be disabled.")
     }

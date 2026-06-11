@@ -502,16 +502,13 @@ public class MainActivity extends AppCompatActivity {
         if (btnChooseFolder != null) btnChooseFolder.setOnClickListener(v -> pickGamesFolder());
         androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
         if (toolbar != null) {
-            String displayName = DeviceProfiles.getProductDisplayName(this, getString(R.string.app_name));
-            toolbar.setTitle(getString(R.string.home_game_selector_title_format, displayName));
+            toolbar.setTitle("");
             try {
-                androidx.appcompat.graphics.drawable.DrawerArrowDrawable dd = new androidx.appcompat.graphics.drawable.DrawerArrowDrawable(this);
-                dd.setProgress(0f);
-                toolbar.setNavigationIcon(dd);
+                toolbar.setNavigationIcon(R.drawable.ic_settings_24);
             } catch (Throwable ignored) {}
-            toolbar.setNavigationOnClickListener(v -> {
-                if (drawerLayout != null) drawerLayout.openDrawer(GravityCompat.START);
-            });
+            toolbar.setNavigationOnClickListener(v ->
+                startActivityForResult(new Intent(this, SettingsActivity.class), 7722)
+            );
             try {
                 toolbar.inflateMenu(R.menu.menu_toolbar_home);
                 Menu menu = toolbar.getMenu();
@@ -5679,6 +5676,16 @@ public class MainActivity extends AppCompatActivity {
                     if ((lower.startsWith("scph") && lower.endsWith(".bin")) || 
                         lower.equals("rom1.bin") || lower.equals("rom2.bin") || 
                         lower.equals("erom.bin") || lower.endsWith("bios.bin")) {
+                        continue;
+                    }
+                    // Skip emulator cache/pipeline files (e.g. vulkan_shaders.bin, vulkan_pipelines.bin, gl_programs.bin)
+                    if (lower.endsWith(".bin") && (
+                            lower.startsWith("vulkan_") ||
+                            lower.startsWith("gl_") ||
+                            lower.startsWith("d3d") ||
+                            lower.contains("shader") ||
+                            lower.contains("pipeline") ||
+                            lower.contains("cache"))) {
                         continue;
                     }
                     boolean matchExt = false;

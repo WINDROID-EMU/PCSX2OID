@@ -343,10 +343,10 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32* data, int size)
 		else
 			CpuVU1->Clear(addr, vuMemSize - addr);
 
-		memcpy(VUx.Micro + addr, data, vuMemSize - addr);
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(VUx.Micro + addr)), data, vuMemSize - addr);
 		size -= (vuMemSize - addr) / 4;
 		data += (vuMemSize - addr) / 4;
-		memcpy(VUx.Micro, data, size * 4);
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(VUx.Micro)), data, size * 4);
 
 		vifX.tag.addr = size * 4;
 	}
@@ -360,7 +360,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32* data, int size)
 			CpuVU0->Clear(addr, size * 4);
 		else
 			CpuVU1->Clear(addr, size * 4);
-		memcpy(VUx.Micro + addr, data, size * 4); //from tests, memcpy is 1fps faster on Grandia 3 than memcpy
+		memcpy(reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(VUx.Micro + addr)), data, size * 4); //from tests, memcpy is 1fps faster on Grandia 3 than memcpy
 
 		vifX.tag.addr += size * 4;
 	}

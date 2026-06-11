@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BackHandler, SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { BackHandler, StatusBar, StyleSheet, View } from 'react-native';
 import { BottomNavigation } from 'react-native-paper';
 import GameSelector from './screens/GameSelector.jsx';
 import SettingsScreen from './screens/SettingsScreen.jsx';
@@ -39,7 +39,7 @@ export default function Router() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar
         barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
         backgroundColor={colors.background}
@@ -53,7 +53,7 @@ export default function Router() {
         activeColor={colors.primary}
         inactiveColor={colors.onSurfaceVariant}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

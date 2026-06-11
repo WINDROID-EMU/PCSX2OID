@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
+import { BackHandler, FlatList, StyleSheet, View } from 'react-native';
 import { Appbar, Button, Card, FAB, Portal, Searchbar, Text } from 'react-native-paper';
 import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -105,7 +105,7 @@ export default function GameSelector() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
           <AndroidBackCloser open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
           <Appbar.Header mode="small" elevated style={{ backgroundColor: colors.surface }}>
@@ -229,7 +229,7 @@ export default function GameSelector() {
               </Button>
             </View>
           </BottomSheetModal>
-        </SafeAreaView>
+        </View>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );

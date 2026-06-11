@@ -172,6 +172,45 @@ namespace vtlb_private
         armAsm->Adds(RCX, RCX, RAX);
 	}
 
+	// Like DynGen_PrepRegs but without _freeX86reg/_freeXMMreg calls.
+	// Safe to use in backpatch thunks (signal handler context) where emitting
+	// register writeback code would cause recursive page faults.
+	static void DynGen_PrepRegsNoFree(int addr_reg, int value_reg, u32 sz, bool xmm)
+	{
+		// Move address into ECX (arg1)
+		if (static_cast<u32>(addr_reg) != ECX.GetCode())
+			armAsm->Mov(ECX, a64::WRegister(addr_reg));
+
+		if (value_reg >= 0)
+		{
+			if (sz == 128)
+			{
+				pxAssert(xmm);
+				// Move data into Q1 (arg2 for 128-bit)
+				if (static_cast<u32>(value_reg) != armQRegister(1).GetCode())
+					armAsm->Mov(armQRegister(1), armQRegister(value_reg));
+			}
+			else if (xmm)
+			{
+				pxAssert(sz == 32);
+				// Move 32-bit float data into EDX
+				armAsm->Fmov(EDX, a64::QRegister(value_reg).S());
+			}
+			else
+			{
+				if (static_cast<u32>(value_reg) != RDX.GetCode())
+					armAsm->Mov(RDX, a64::XRegister(value_reg));
+			}
+		}
+
+		// VTLB lookup: RAX = vmap[ECX >> VTLB_PAGE_BITS]; RCX += RAX
+		armAsm->Mov(EAX, ECX);
+		armAsm->Lsr(EAX, EAX, VTLB_PAGE_BITS);
+		armAsm->Ldr(RXVIXLSCRATCH, PTR_CPU(vtlbdata.vmap));
+		armAsm->Ldr(RAX, a64::MemOperand(RXVIXLSCRATCH, RAX, a64::LSL, 3));
+		armAsm->Adds(RCX, RCX, RAX);
+	}
+
 	// ------------------------------------------------------------------------
 	static void DynGen_DirectRead(u32 bits, bool sign)
 	{
@@ -1148,7 +1187,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
             if(stack_xmm[i])
             {
 //				xMOVAPS(ptr128[rsp + stack_offset], xRegisterSSE(i));
-                armAsm->Str(a64::DRegister(i), a64::MemOperand(a64::sp, stack_offset));
+                armAsm->Str(a64::QRegister(i), a64::MemOperand(a64::sp, stack_offset));
                 stack_offset += XMM_SIZE;
             }
         }
@@ -1166,7 +1205,10 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 	if (is_load)
 	{
-		DynGen_PrepRegs(address_register, -1, size_in_bits, is_xmm);
+		// Use NoFree variant: backpatch runs in signal handler context; calling
+		// _freeX86reg/_freeXMMreg would emit PS2-register writeback code that
+		// accesses write-protected fastmem pages, causing a recursive SIGSEGV → SIGABRT.
+		DynGen_PrepRegsNoFree(address_register, -1, size_in_bits, is_xmm);
 		DynGen_HandlerTest([size_in_bits, is_signed]() {DynGen_DirectRead(size_in_bits, is_signed); },  0, size_in_bits, is_signed && size_in_bits <= 32);
 
 		if (size_in_bits == 128)
@@ -1194,37 +1236,10 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	}
 	else
 	{
-		if (address_register != RCX.GetCode()) {
-//            xMOV(arg1regd, xRegister32(address_register));
-            armAsm->Mov(ECX, a64::WRegister(address_register));
-        }
-
-		if (size_in_bits == 128)
-		{
-//			const xRegisterSSE argreg(xRegisterSSE::GetArgRegister(1, 0));
-            const a64::QRegister argreg(armQRegister(1));
-			if (data_register != argreg.GetCode()) {
-//                xMOVAPS(argreg, xRegisterSSE(data_register));
-                armAsm->Mov(argreg, a64::QRegister(data_register));
-            }
-		}
-		else
-		{
-			if (is_xmm)
-			{
-//				xMOVD(arg2reg, xRegisterSSE(data_register));
-                armAsm->Fmov(RDX, a64::QRegister(data_register).V1D());
-			}
-			else
-			{
-				if (data_register != RDX.GetCode()) {
-//                    xMOV(arg2reg, xRegister64(data_register));
-                    armAsm->Mov(RDX, a64::XRegister(data_register));
-                }
-			}
-		}
-
-		DynGen_PrepRegs(address_register, data_register, size_in_bits, is_xmm);
+		// Use NoFree variant for the same reason as the load path above.
+		// The arg registers (ECX, RDX/Q1) are set inside DynGen_PrepRegsNoFree,
+		// so the manual moves that used to precede DynGen_PrepRegs are removed.
+		DynGen_PrepRegsNoFree(address_register, data_register, size_in_bits, is_xmm);
 		DynGen_HandlerTest([size_in_bits]() { DynGen_DirectWrite(size_in_bits); }, 1, size_in_bits);
 	}
 
@@ -1237,7 +1252,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
             if(stack_xmm[i])
 			{
 //				xMOVAPS(xRegisterSSE(i), ptr128[rsp + stack_offset]);
-                armAsm->Ldr(a64::DRegister(i), a64::MemOperand(a64::sp, stack_offset));
+                armAsm->Ldr(a64::QRegister(i), a64::MemOperand(a64::sp, stack_offset));
 				stack_offset += XMM_SIZE;
 			}
 		}
