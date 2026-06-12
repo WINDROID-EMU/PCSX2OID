@@ -46,7 +46,7 @@
     <string name="onboarding_back">Back</string>
     <string name="onboarding_continue">Continue</string>
     <string name="onboarding_finish">Finish</string>
-    <string name="onboarding_welcome_title">Welcome to PCSX2</string>
+    <string name="onboarding_welcome_title">Welcome to PCSX2oid</string>
     <string name="onboarding_welcome_message">Let’s get you ready to play. We’ll guide you through BIOS and storage setup—you can change these later in Settings.</string>
     <string name="onboarding_bios_title">PlayStation 2 BIOS</string>
     <string name="onboarding_bios_message">PCSX2 needs a legal PS2 BIOS image from your console. Pick a .bin file you have already dumped.</string>

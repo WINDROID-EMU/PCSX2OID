@@ -421,22 +421,21 @@ public class MainActivity extends AppCompatActivity {
     ControllerMappingManager.init(this);
     refreshVibrationPreference();
 
-    // Load on-screen controls hide timeout
-    loadHideTimeoutFromPrefs();
-
-    loadOnScreenUiScalePreference();
-    currentOnScreenUiStyle = resolveOnScreenUiStylePreference();
-        if (!disableTouchControls) {
-            makeButtonTouch();
-        }
-
-    setSurfaceView(new SDLSurface(this));
-
-        maybeStartOnboardingFlow();
-
     // Cache on-screen pad containers
     llPadSelectStart = findViewById(R.id.ll_pad_select_start);
     llPadRight = findViewById(R.id.ll_pad_right);
+
+    loadOnScreenUiScalePreference();
+    currentOnScreenUiStyle = resolveOnScreenUiStylePreference();
+    if (!disableTouchControls) {
+        makeButtonTouch();
+    }
+
+    setSurfaceView(new SDLSurface(this));
+
+    maybeStartOnboardingFlow();
+
+    // Cache on-screen pad views
     JoystickView joystickLeft = findViewById(R.id.joystick_left);
     DPadView dpadView = findViewById(R.id.dpad_view);
     setupInGameDrawer();
@@ -3187,18 +3186,88 @@ public class MainActivity extends AppCompatActivity {
         applyScaleWithPivot(leftShoulders, multiplier, multiplier, 0f, 0f);
         View rightShoulders = findViewById(R.id.ll_pad_shoulders_right);
         applyScaleWithPivot(rightShoulders, multiplier, multiplier, 1f, 0f);
+
+        int baseJoyWidth = 140;
+        int baseJoyHeight = 140;
+        int baseDpadWidth = 105;
+        int baseDpadHeight = 105;
+
+        if (currentControllerMode == 1) { // 1 Stick + Face Buttons
+            baseJoyWidth = 140;
+            baseJoyHeight = 140;
+            baseDpadWidth = 105;
+            baseDpadHeight = 105;
+        } else if (currentControllerMode == 2) { // D-Pad Only
+            baseJoyWidth = 140;
+            baseJoyHeight = 140;
+            baseDpadWidth = 140;
+            baseDpadHeight = 140;
+        }
+
         JoystickView joystickLeft = findViewById(R.id.joystick_left);
-        applyScaleWithPivot(joystickLeft, multiplier, multiplier, 0f, 1f);
+        if (joystickLeft != null) {
+            ViewGroup.LayoutParams lp = joystickLeft.getLayoutParams();
+            if (lp != null) {
+                lp.width = dpToPx((int) (baseJoyWidth * multiplier));
+                lp.height = dpToPx((int) (baseJoyHeight * multiplier));
+                joystickLeft.setLayoutParams(lp);
+            }
+            joystickLeft.setScaleX(1.0f);
+            joystickLeft.setScaleY(1.0f);
+        }
+
         JoystickView joystickRight = findViewById(R.id.joystick_right);
-        applyScaleWithPivot(joystickRight, multiplier, multiplier, 1f, 1f);
+        if (joystickRight != null) {
+            ViewGroup.LayoutParams lp = joystickRight.getLayoutParams();
+            if (lp != null) {
+                lp.width = dpToPx((int) (baseJoyWidth * multiplier));
+                lp.height = dpToPx((int) (baseJoyHeight * multiplier));
+                joystickRight.setLayoutParams(lp);
+            }
+            joystickRight.setScaleX(1.0f);
+            joystickRight.setScaleY(1.0f);
+        }
+
         DPadView dpadView = findViewById(R.id.dpad_view);
-        applyScaleWithPivot(dpadView, multiplier, multiplier, 0f, 1f);
+        if (dpadView != null) {
+            ViewGroup.LayoutParams lp = dpadView.getLayoutParams();
+            if (lp != null) {
+                lp.width = dpToPx((int) (baseDpadWidth * multiplier));
+                lp.height = dpToPx((int) (baseDpadHeight * multiplier));
+                dpadView.setLayoutParams(lp);
+            }
+            dpadView.setScaleX(1.0f);
+            dpadView.setScaleY(1.0f);
+        }
     }
 
     private void applyScaleWithPivot(View view, float scaleX, float scaleY, float pivotXF, float pivotYF) {
         if (view == null) {
             return;
         }
+
+        View.OnLayoutChangeListener oldListener = (View.OnLayoutChangeListener) view.getTag(R.id.tag_layout_listener);
+        if (oldListener != null) {
+            view.removeOnLayoutChangeListener(oldListener);
+        }
+
+        View.OnLayoutChangeListener newListener = new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                float w = right - left;
+                float h = bottom - top;
+                if (w > 0 && h > 0) {
+                    v.setPivotX(w * pivotXF);
+                    v.setPivotY(h * pivotYF);
+                    v.setScaleX(scaleX);
+                    v.setScaleY(scaleY);
+                }
+            }
+        };
+        view.addOnLayoutChangeListener(newListener);
+        view.setTag(R.id.tag_layout_listener, newListener);
+
         Runnable apply = () -> {
             float pivotX = view.getWidth() * pivotXF;
             float pivotY = view.getHeight() * pivotYF;
@@ -3948,6 +4017,7 @@ public class MainActivity extends AppCompatActivity {
     public void onConfigurationChanged(@NonNull Configuration p_newConfig) {
         super.onConfigurationChanged(p_newConfig);
         applyGameGridConfig();
+        applyUserUiScale();
     }
 
     @Override
@@ -5375,16 +5445,7 @@ public class MainActivity extends AppCompatActivity {
         if (show || disableTouchControls) {
             hideDrawerToggle();
         }
-        int vis = show ? View.GONE : View.VISIBLE;
         setOnScreenControlsVisible(!show);
-        if (llPadSelectStart != null) llPadSelectStart.setVisibility(vis);
-        if (llPadRight != null) llPadRight.setVisibility(vis);
-        View j = findViewById(R.id.joystick_left);
-        if (j != null) j.setVisibility(vis);
-        View jr = findViewById(R.id.joystick_right);
-        if (jr != null) jr.setVisibility(vis);
-        View d = findViewById(R.id.dpad_view);
-        if (d != null) d.setVisibility(vis);
         try {
             if (show) {
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);

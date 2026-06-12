@@ -2,4 +2,5 @@
 <resources>
     <item name="tag_request_key" type="id"/>
     <item name="tag_avatar_loader" type="id"/>
+    <item name="tag_layout_listener" type="id"/>
 </resources>

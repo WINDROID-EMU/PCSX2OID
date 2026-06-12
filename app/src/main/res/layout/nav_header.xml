@@ -26,26 +26,27 @@
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:gravity="bottom"
 		android:orientation="vertical"
 		android:padding="16dp"
-		android:gravity="bottom">
+		android:visibility="gone">
 
 		<TextView
 			android:id="@+id/tv_header_title"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="PCSX2"
-			android:textStyle="bold"
+			android:textColor="@android:color/white"
 			android:textSize="20sp"
-			android:textColor="@android:color/white"/>
+			android:textStyle="bold" />
 
 		<TextView
 			android:id="@+id/tv_header_sub"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="@string/home_game_selector_subtitle"
-			android:textSize="14sp"
-			android:textColor="@android:color/white"/>
+			android:textColor="@android:color/white"
+			android:textSize="14sp" />
 	</LinearLayout>
 
 </FrameLayout>

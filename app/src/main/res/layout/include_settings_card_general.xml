@@ -29,7 +29,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="@string/settings_fullscreen_ui"
+            android:visibility="gone"
             app:useMaterialThemeColors="true" />
+
 
         <LinearLayout
             android:layout_width="match_parent"

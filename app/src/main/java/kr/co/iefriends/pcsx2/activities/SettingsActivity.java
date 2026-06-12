@@ -683,16 +683,14 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 	private void initializeGeneralSettings() {
+		// FSUI is permanently enabled — always force true on startup
 		MaterialSwitch swFsui = findViewById(R.id.sw_fsui);
+		try {
+			NativeApp.setSetting("UI", "EnableFullscreenUI", "bool", "true");
+		} catch (Exception ignored) {}
 		if (swFsui != null) {
-			try {
-				String fsui = NativeApp.getSetting("UI", "EnableFullscreenUI", "bool");
-				swFsui.setChecked("true".equalsIgnoreCase(fsui));
-			} catch (Exception ignored) {}
-			swFsui.setOnCheckedChangeListener((buttonView, isChecked) -> {
-				NativeApp.setSetting("UI", "EnableFullscreenUI", "bool", isChecked ? "true" : "false");
-				markLayoutNeedsRefresh();
-			});
+			swFsui.setChecked(true);
+			// No listener — setting is locked to true
 		}
 
 		MaterialSwitch swExpandCutout = findViewById(R.id.sw_expand_cutout);
@@ -716,7 +714,7 @@ public class SettingsActivity extends AppCompatActivity {
 		final String[] aspectChoices = getResources().getStringArray(R.array.aspect_ratios);
 		try {
 			String aspect = NativeApp.getSetting("EmuCore/GS", "AspectRatio", "string");
-			int pos = 0;
+			int pos = 0; // default: Stretch (index 0)
 			if (aspect != null && !aspect.isEmpty()) {
 				for (int i = 0; i < aspectChoices.length; i++) {
 					if (aspect.equalsIgnoreCase(aspectChoices[i])) {
@@ -724,6 +722,10 @@ public class SettingsActivity extends AppCompatActivity {
 						break;
 					}
 				}
+			} else {
+				// No saved value — force Stretch as default
+				NativeApp.setSetting("EmuCore/GS", "AspectRatio", "string", "Stretch");
+				NativeApp.setAspectRatio(0);
 			}
 			spAspectRatio.setSelection(Math.max(0, Math.min(aspectAdapter.getCount() - 1, pos)), false);
 		} catch (Exception ignored) {}
@@ -2762,35 +2764,39 @@ public class SettingsActivity extends AppCompatActivity {
 
 	private void initializeActionButtons() {
 		Button btnAbout = findViewById(R.id.btn_about);
-		btnAbout.setOnClickListener(v -> {
-			String versionName = "";
-			try { 
-				versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName; 
-			} catch (Exception ignored) {}
-			String message = "ARMSX2 (" + versionName + ")\n" +
-        		"by ARMSX2 team\n\n" +
-        		"Core contributors:\n" +
-        		"- MoonPower â€” App developer\n" +
-        		"- jpolo â€” Management\n" +
-        		"- Medievalshell â€” Web developer\n" +
-        		"- set l â€” Web developer\n" +
-        		"- Alex â€” QA tester\n" +
-        		"- Yua â€” QA tester\n\n" +
-        		"Thanks to:\n" +
-        		"- pontos2024 (emulator base)\n" +
-        		"- PCSX2 v2.3.430 (core emulator)\n" +
-        		"- SDL (SDL3)\n" +
-        		"- Fffathur (icon design)\n" +
-				"- vivimagic0 (icon design)";
-			new MaterialAlertDialogBuilder(this)
-					.setTitle(R.string.drawer_about)
-					.setMessage(message)
-					.setPositiveButton(android.R.string.ok, (d, w) -> d.dismiss())
-					.show();
-		});
+		if (btnAbout != null) {
+			btnAbout.setOnClickListener(v -> {
+				String versionName = "";
+				try {
+					versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+				} catch (Exception ignored) {}
+				String message = "ARMSX2 (" + versionName + ")\n" +
+					"by ARMSX2 team\n\n" +
+					"Core contributors:\n" +
+					"- MoonPower \u2013 App developer\n" +
+					"- jpolo \u2013 Management\n" +
+					"- Medievalshell \u2013 Web developer\n" +
+					"- set l \u2013 Web developer\n" +
+					"- Alex \u2013 QA tester\n" +
+					"- Yua \u2013 QA tester\n\n" +
+					"Thanks to:\n" +
+					"- pontos2024 (emulator base)\n" +
+					"- PCSX2 v2.3.430 (core emulator)\n" +
+					"- SDL (SDL3)\n" +
+					"- Fffathur (icon design)\n" +
+					"- vivimagic0 (icon design)";
+				new MaterialAlertDialogBuilder(this)
+						.setTitle(R.string.drawer_about)
+						.setMessage(message)
+						.setPositiveButton(android.R.string.ok, (d, w) -> d.dismiss())
+						.show();
+			});
+		}
 
 		Button btnBack = findViewById(R.id.btn_back);
-		btnBack.setOnClickListener(v -> finish());
+		if (btnBack != null) {
+			btnBack.setOnClickListener(v -> finish());
+		}
 	}
 
 	private void showControllerCalibrationDialog() {
