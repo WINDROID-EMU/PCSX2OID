@@ -449,6 +449,7 @@ public class MainActivity extends AppCompatActivity {
 
     loadOnScreenUiScalePreference();
     currentOnScreenUiStyle = resolveOnScreenUiStylePreference();
+    initControlEditor();
     if (!disableTouchControls) {
         makeButtonTouch();
     }
@@ -461,7 +462,6 @@ public class MainActivity extends AppCompatActivity {
     JoystickView joystickLeft = findViewById(R.id.joystick_left);
     DPadView dpadView = findViewById(R.id.dpad_view);
     setupInGameDrawer();
-    initControlEditor();
     setupTouchRevealOverlay();
     // Home UI
     drawerLayout = findViewById(R.id.drawer_root);

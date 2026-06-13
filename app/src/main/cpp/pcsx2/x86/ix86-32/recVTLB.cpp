@@ -1154,6 +1154,20 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
     std::bitset<iREGCNT_GPR> stack_gpr;
     std::bitset<iREGCNT_XMM> stack_xmm;
 
+	// If a JIT compilation block was interrupted by this signal handler (armAsm != nullptr),
+	// armStartBlock() inside recBeginThunk() would fail its pxAssert(!armAsm) and SIGABRT.
+	// Save and temporarily null out the assembler state so the thunk can be generated safely.
+	// We MUST NOT delete or finalize the saved assembler, as it contains compilation state.
+	a64::MacroAssembler* saved_asm = armAsm;
+	u8* saved_asm_ptr = armAsmPtr;
+	size_t saved_asm_capacity = armAsmCapacity;
+	ArmConstantPool* saved_pool = armConstantPool;
+	if (armAsm)
+	{
+		armAsm = nullptr;
+		// HostSys::EndCodeWrite / BeginCodeWrite will be handled cleanly by the thunk's start/end.
+	}
+
 	u8* thunk = recBeginThunk();
 
 	// save regs
@@ -1275,6 +1289,17 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
     armEmitJmp(reinterpret_cast<const void*>(code_address + code_size), true);
 
 	recEndThunk();
+
+	// Restore the assembler state that was saved before the thunk (if any).
+	// This allows any interrupted JIT compilation to resume exactly where it left off,
+	// with all its internal label state intact.
+	if (saved_asm)
+	{
+		armAsm = saved_asm;
+		armAsmPtr = saved_asm_ptr;
+		armAsmCapacity = saved_asm_capacity;
+		armConstantPool = saved_pool;
+	}
 
 	// backpatch to a jump to the slowmem handler
 //	x86Ptr = (u8*)code_address;
