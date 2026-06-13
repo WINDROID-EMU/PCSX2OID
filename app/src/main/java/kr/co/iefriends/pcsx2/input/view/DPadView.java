@@ -36,7 +36,7 @@ import androidx.annotation.Nullable;
 /**
  * Custom D-pad view for PCSX2 directional control
  */
-public class DPadView extends View {
+public class DPadView extends View implements EditableControl {
     
     private Paint basePaint;
     private Paint pressedPaint;
@@ -56,6 +56,7 @@ public class DPadView extends View {
     private boolean downPressed = false;
     private boolean leftPressed = false;
     private boolean rightPressed = false;
+    private boolean isEditMode = false;
     
     public interface OnDPadListener {
         void onDirectionPressed(Direction direction, boolean pressed);
@@ -296,6 +297,13 @@ public class DPadView extends View {
             if (rightPressed) rightArrowPaint.setAlpha(255); else rightArrowPaint.setAlpha(160);
             drawArrowRight(canvas, rightRegion.centerX(), cy, arrowSize, rightArrowPaint);
         }
+        
+        if (isEditMode) {
+            Paint editPaint = new Paint();
+            editPaint.setColor(0x88FF0000); // Semi-transparent red
+            editPaint.setStyle(Paint.Style.FILL);
+            canvas.drawPath(dpadPath, editPaint);
+        }
     }
     
     // Windroid-style arrow triangle drawing methods
@@ -414,5 +422,18 @@ public class DPadView extends View {
     
     public void setOnDPadListener(OnDPadListener listener) {
         this.listener = listener;
+    }
+    
+    @Override
+    public boolean isPointInside(float x, float y) {
+        return upRegion.contains(x, y) || downRegion.contains(x, y) 
+            || leftRegion.contains(x, y) || rightRegion.contains(x, y)
+            || centerRegion.contains(x, y);
+    }
+
+    @Override
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        invalidate();
     }
 }

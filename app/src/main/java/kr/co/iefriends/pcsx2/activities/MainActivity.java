@@ -196,6 +196,23 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREF_ONBOARDING_COMPLETE = "onboarding_complete";
     private static final String PREF_ONSCREEN_UI_STYLE = "on_screen_ui_style";
     private static final String PREF_UI_SCALE_MULTIPLIER = "onscreen_ui_scale_multiplier";
+    private static final String PREF_CONTROL_X = "control_x_";
+    private static final String PREF_CONTROL_Y = "control_y_";
+    private static final String PREF_CONTROL_SCALE = "control_scale_";
+    private static final String PREF_CONTROL_ALPHA = "control_alpha_";
+
+    // Edit Controls Mode
+    private boolean isEditControlsMode = false;
+    private View selectedEditControl = null;
+    private float editDragStartX = 0;
+    private float editDragStartY = 0;
+    private float editDragInitialTranslationX = 0;
+    private float editDragInitialTranslationY = 0;
+    private View controlEditorRoot;
+    private TextView controlEditorTitle;
+    private Slider controlEditorSliderSize;
+    private Slider controlEditorSliderOpacity;
+    private View[] editableControls;
     private static final String STYLE_DEFAULT = "default";
     private static final String STYLE_NETHER = "nether";
     private static final float ONSCREEN_UI_SCALE_MIN = 0.2f;
@@ -240,7 +257,12 @@ public class MainActivity extends AppCompatActivity {
         new OnBackPressedCallback(false) {
             @Override
             public void handleOnBackPressed() {
-                shutdownVmToHome();
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(MainActivity.this)
+                    .setTitle(R.string.drawer_action_power)
+                    .setMessage("Are you sure you want to exit?")
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> shutdownVmToHome())
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
             }
         };
     private final OnBackPressedCallback onSearchBackPressCallback =
@@ -396,7 +418,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (Build.VERSION.SDK_INT >= 33) {
             try {
-                GameManager gm = (GameManager) getSystemService(Context.GAME_SERVICE);
+                GameManager gm = getSystemService(GameManager.class);
                 if (gm != null) {
                     gm.setGameState(new GameState(false, GameState.MODE_GAMEPLAY_INTERRUPTIBLE));
                 }
@@ -439,6 +461,7 @@ public class MainActivity extends AppCompatActivity {
     JoystickView joystickLeft = findViewById(R.id.joystick_left);
     DPadView dpadView = findViewById(R.id.dpad_view);
     setupInGameDrawer();
+    initControlEditor();
     setupTouchRevealOverlay();
     // Home UI
     drawerLayout = findViewById(R.id.drawer_root);
@@ -1250,6 +1273,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String pendingManualCoverGameKey;
 
+    @SuppressLint("WrongConstant")
     private final ActivityResultLauncher<Intent> startActivityResultPickImage = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -1826,7 +1850,7 @@ public class MainActivity extends AppCompatActivity {
         if (hasFocus) applyFullscreen();
         if (Build.VERSION.SDK_INT >= 33 && hasFocus) {
             try {
-                GameManager gm = (GameManager) getSystemService(Context.GAME_SERVICE);
+                GameManager gm = getSystemService(GameManager.class);
                 if (gm != null) gm.setGameState(new GameState(false, GameState.MODE_GAMEPLAY_INTERRUPTIBLE));
             } catch (Throwable ignored) {}
         }
@@ -1994,7 +2018,7 @@ public class MainActivity extends AppCompatActivity {
             // BIOS is present, signal we’re gameplay-ready.
             if (Build.VERSION.SDK_INT >= 33) {
                 try {
-                    GameManager gm = (GameManager) getSystemService(Context.GAME_SERVICE);
+                    GameManager gm = getSystemService(GameManager.class);
                     if (gm != null) gm.setGameState(new GameState(false, GameState.MODE_GAMEPLAY_INTERRUPTIBLE));
                 } catch (Throwable ignored) {}
             }
@@ -2189,10 +2213,22 @@ public class MainActivity extends AppCompatActivity {
             });
         }
         if (inGameDrawer != null) {
+            View drawerCard = findViewById(R.id.drawer_card);
+            if (drawerCard != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(drawerCard, (v, insets) -> {
+                    v.setPadding(0, 0, 0, 0);
+                    if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                        params.setMargins(0, 0, 0, 0);
+                        v.setLayoutParams(params);
+                    }
+                    return insets;
+                });
+            }
             try {
                 inGameDrawer.setDrawerElevation(0f);
             } catch (Throwable ignored) {}
-            inGameDrawer.setDrawerLockMode(disableTouchControls ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
+            inGameDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             inGameDrawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
                 @Override
                 public void onDrawerOpened(@NonNull View drawerView) {
@@ -2344,6 +2380,12 @@ public class MainActivity extends AppCompatActivity {
         } else {
             updateOnScreenUiScaleLabel(uiScaleValue);
         }
+        
+        MaterialButton btnEditControls = findViewById(R.id.drawer_btn_edit_controls);
+        if (btnEditControls != null) {
+            btnEditControls.setOnClickListener(v -> enterEditControlsMode());
+        }
+        
         updatePauseButtonIcon();
     }
 
@@ -3238,6 +3280,208 @@ public class MainActivity extends AppCompatActivity {
             }
             dpadView.setScaleX(1.0f);
             dpadView.setScaleY(1.0f);
+        }
+        
+        applyCustomControls();
+    }
+
+    private void initControlEditor() {
+        controlEditorRoot = findViewById(R.id.control_editor_include);
+        controlEditorTitle = findViewById(R.id.control_editor_title);
+        controlEditorSliderSize = findViewById(R.id.control_editor_slider_size);
+        controlEditorSliderOpacity = findViewById(R.id.control_editor_slider_opacity);
+        MaterialButton btnReset = findViewById(R.id.control_editor_btn_reset);
+        MaterialButton btnCancel = findViewById(R.id.control_editor_btn_cancel);
+        MaterialButton btnSave = findViewById(R.id.control_editor_btn_save);
+
+        if (controlEditorRoot == null) return;
+
+        View panel = findViewById(R.id.control_editor_panel);
+        if (panel != null) {
+            panel.setOnTouchListener(new View.OnTouchListener() {
+                float startX, startY, initialTx, initialTy;
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            startX = event.getRawX();
+                            startY = event.getRawY();
+                            initialTx = v.getTranslationX();
+                            initialTy = v.getTranslationY();
+                            return true;
+                        case MotionEvent.ACTION_MOVE:
+                            v.setTranslationX(initialTx + (event.getRawX() - startX));
+                            v.setTranslationY(initialTy + (event.getRawY() - startY));
+                            return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        editableControls = new View[] {
+            findViewById(R.id.btn_pad_select), findViewById(R.id.btn_pad_start),
+            findViewById(R.id.btn_pad_a), findViewById(R.id.btn_pad_b),
+            findViewById(R.id.btn_pad_x), findViewById(R.id.btn_pad_y),
+            findViewById(R.id.btn_pad_l1), findViewById(R.id.btn_pad_l2), findViewById(R.id.btn_pad_l3),
+            findViewById(R.id.btn_pad_r1), findViewById(R.id.btn_pad_r2), findViewById(R.id.btn_pad_r3),
+            findViewById(R.id.joystick_left), findViewById(R.id.joystick_right),
+            findViewById(R.id.dpad_view)
+        };
+
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> exitEditControlsMode(false));
+        if (btnSave != null) btnSave.setOnClickListener(v -> exitEditControlsMode(true));
+        if (btnReset != null) btnReset.setOnClickListener(v -> resetCustomControls());
+
+        if (controlEditorSliderSize != null) {
+            controlEditorSliderSize.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser && selectedEditControl != null) {
+                    selectedEditControl.setScaleX(value);
+                    selectedEditControl.setScaleY(value);
+                }
+            });
+        }
+        if (controlEditorSliderOpacity != null) {
+            controlEditorSliderOpacity.addOnChangeListener((slider, value, fromUser) -> {
+                if (fromUser && selectedEditControl != null) {
+                    selectedEditControl.setAlpha(value);
+                }
+            });
+        }
+    }
+
+    private void applyCustomControls() {
+        if (editableControls == null) return;
+        android.content.SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        for (View v : editableControls) {
+            if (v == null) continue;
+            String idStr = getResources().getResourceEntryName(v.getId());
+            float tx = prefs.getFloat(PREF_CONTROL_X + idStr, 0f);
+            float ty = prefs.getFloat(PREF_CONTROL_Y + idStr, 0f);
+            float scale = prefs.getFloat(PREF_CONTROL_SCALE + idStr, 1f);
+            float alpha = prefs.getFloat(PREF_CONTROL_ALPHA + idStr, 1f);
+            
+            v.setTranslationX(tx);
+            v.setTranslationY(ty);
+            v.setScaleX(scale);
+            v.setScaleY(scale);
+            v.setAlpha(alpha);
+        }
+    }
+
+    private void enterEditControlsMode() {
+        isEditControlsMode = true;
+        closeInGameDrawer();
+        if (controlEditorRoot != null) {
+            controlEditorRoot.setVisibility(View.VISIBLE);
+        }
+        selectedEditControl = null;
+        if (controlEditorTitle != null) {
+            controlEditorTitle.setText("Edit Controls");
+        }
+
+        for (View v : editableControls) {
+            if (v != null && v instanceof kr.co.iefriends.pcsx2.input.view.EditableControl) {
+                ((kr.co.iefriends.pcsx2.input.view.EditableControl) v).setEditMode(true);
+            }
+        }
+        
+        View.OnTouchListener editTouchListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (!isEditControlsMode) return false;
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        float localX = event.getX();
+                        float localY = event.getY();
+                        if (v instanceof kr.co.iefriends.pcsx2.input.view.EditableControl) {
+                            if (!((kr.co.iefriends.pcsx2.input.view.EditableControl) v).isPointInside(localX, localY)) {
+                                return false;
+                            }
+                        }
+                        
+                        selectedEditControl = v;
+                        if (controlEditorTitle != null) {
+                            controlEditorTitle.setText("Selected: " + getResources().getResourceEntryName(v.getId()));
+                        }
+                        if (controlEditorSliderSize != null) {
+                            controlEditorSliderSize.setValue(v.getScaleX());
+                        }
+                        if (controlEditorSliderOpacity != null) {
+                            controlEditorSliderOpacity.setValue(v.getAlpha());
+                        }
+                        editDragStartX = event.getRawX();
+                        editDragStartY = event.getRawY();
+                        editDragInitialTranslationX = v.getTranslationX();
+                        editDragInitialTranslationY = v.getTranslationY();
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        if (selectedEditControl == v) {
+                            float dx = event.getRawX() - editDragStartX;
+                            float dy = event.getRawY() - editDragStartY;
+                            v.setTranslationX(editDragInitialTranslationX + dx);
+                            v.setTranslationY(editDragInitialTranslationY + dy);
+                        }
+                        return true;
+                }
+                return false;
+            }
+        };
+
+        for (View v : editableControls) {
+            if (v != null) {
+                v.setOnTouchListener(editTouchListener);
+            }
+        }
+    }
+
+    private void exitEditControlsMode(boolean save) {
+        isEditControlsMode = false;
+        if (controlEditorRoot != null) {
+            controlEditorRoot.setVisibility(View.GONE);
+        }
+        
+        for (View v : editableControls) {
+            if (v != null) {
+                v.setOnTouchListener(null);
+                if (v instanceof kr.co.iefriends.pcsx2.input.view.EditableControl) {
+                    ((kr.co.iefriends.pcsx2.input.view.EditableControl) v).setEditMode(false);
+                }
+            }
+        }
+
+        if (save) {
+            android.content.SharedPreferences.Editor editor = getSharedPreferences(PREFS, MODE_PRIVATE).edit();
+            for (View v : editableControls) {
+                if (v == null) continue;
+                String idStr = getResources().getResourceEntryName(v.getId());
+                editor.putFloat(PREF_CONTROL_X + idStr, v.getTranslationX());
+                editor.putFloat(PREF_CONTROL_Y + idStr, v.getTranslationY());
+                editor.putFloat(PREF_CONTROL_SCALE + idStr, v.getScaleX());
+                editor.putFloat(PREF_CONTROL_ALPHA + idStr, v.getAlpha());
+            }
+            editor.apply();
+        } else {
+            applyCustomControls();
+        }
+    }
+
+    private void resetCustomControls() {
+        android.content.SharedPreferences.Editor editor = getSharedPreferences(PREFS, MODE_PRIVATE).edit();
+        for (View v : editableControls) {
+            if (v == null) continue;
+            String idStr = getResources().getResourceEntryName(v.getId());
+            editor.remove(PREF_CONTROL_X + idStr);
+            editor.remove(PREF_CONTROL_Y + idStr);
+            editor.remove(PREF_CONTROL_SCALE + idStr);
+            editor.remove(PREF_CONTROL_ALPHA + idStr);
+        }
+        editor.apply();
+        applyCustomControls();
+        
+        if (selectedEditControl != null) {
+            if (controlEditorSliderSize != null) controlEditorSliderSize.setValue(selectedEditControl.getScaleX());
+            if (controlEditorSliderOpacity != null) controlEditorSliderOpacity.setValue(selectedEditControl.getAlpha());
         }
     }
 
@@ -5161,6 +5405,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private final ActivityResultLauncher<Intent> startActivityResultPickDataDir = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -5182,6 +5427,7 @@ public class MainActivity extends AppCompatActivity {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     // HOME FLOW
+    @SuppressLint("WrongConstant")
     private final ActivityResultLauncher<Intent> startActivityResultPickFolder = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -5416,7 +5662,7 @@ public class MainActivity extends AppCompatActivity {
         if (drawerLayout != null) {
             drawerLayout.setVisibility(show ? View.VISIBLE : View.GONE);
             try {
-                drawerLayout.setDrawerLockMode(show ? DrawerLayout.LOCK_MODE_UNLOCKED : DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+                drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
                 drawerLayout.setScrimColor(android.graphics.Color.TRANSPARENT);
             } catch (Throwable ignored) {}
         }
@@ -5427,7 +5673,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Throwable ignored) {}
                 inGameDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             } else {
-                inGameDrawer.setDrawerLockMode(disableTouchControls ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED : DrawerLayout.LOCK_MODE_UNLOCKED);
+                inGameDrawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             }
         }
         if (show) {
@@ -5535,6 +5781,7 @@ public class MainActivity extends AppCompatActivity {
         i.putExtra("PORTRAIT_BG", portrait);
         startActivityResultPickBg.launch(i);
     }
+    @SuppressLint("WrongConstant")
     private final ActivityResultLauncher<Intent> startActivityResultPickBg = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -6869,5 +7116,4 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 }

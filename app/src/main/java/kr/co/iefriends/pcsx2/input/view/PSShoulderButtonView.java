@@ -13,7 +13,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
-public class PSShoulderButtonView extends View {
+public class PSShoulderButtonView extends View implements EditableControl {
     
     private Paint basePaint;
     private Paint pressedPaint;
@@ -25,6 +25,7 @@ public class PSShoulderButtonView extends View {
     private String label = "";
     private int textColor = 0xFFFFFFFF; 
     private Drawable iconDrawable;
+    private boolean isEditMode = false;
     
     public interface OnPSShoulderButtonListener {
         void onButtonPressed(boolean pressed);
@@ -98,10 +99,8 @@ public class PSShoulderButtonView extends View {
             iconDrawable.setState(isPressed ? new int[]{android.R.attr.state_pressed} : new int[]{});
             iconDrawable.setAlpha(isPressed ? 200 : 255);
             iconDrawable.draw(canvas);
-            return;
-        }
-
-        Paint fillPaint = isPressed ? pressedPaint : basePaint;
+        } else {
+            Paint fillPaint = isPressed ? pressedPaint : basePaint;
         
         // Windroid-style: large rounded corners (32F radius ratio)
         float cornerRadius = Math.min(bounds.width(), bounds.height()) * 0.3f;
@@ -112,6 +111,15 @@ public class PSShoulderButtonView extends View {
             textPaint.setColor(isPressed ? 0xFF000000 : textColor);
             float textY = bounds.centerY() + textPaint.getTextSize() / 3;
             canvas.drawText(label, bounds.centerX(), textY, textPaint);
+        }
+        } // end of else
+        
+        if (isEditMode) {
+            Paint editPaint = new Paint();
+            editPaint.setColor(0x88FF0000); // Semi-transparent red
+            editPaint.setStyle(Paint.Style.FILL);
+            float editCornerRadius = Math.min(bounds.width(), bounds.height()) * 0.3f;
+            canvas.drawRoundRect(bounds, editCornerRadius, editCornerRadius, editPaint);
         }
     }
     
@@ -143,6 +151,17 @@ public class PSShoulderButtonView extends View {
         }
         
         return false;
+    }
+    
+    @Override
+    public boolean isPointInside(float x, float y) {
+        return bounds.contains(x, y);
+    }
+
+    @Override
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        invalidate();
     }
 
     public void setLabel(String label) {

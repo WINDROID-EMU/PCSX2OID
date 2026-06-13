@@ -33,7 +33,7 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
-public class JoystickView extends View {
+public class JoystickView extends View implements EditableControl {
     
     private Paint basePaint;
     private Paint knobPaint;
@@ -50,6 +50,7 @@ public class JoystickView extends View {
     private Drawable baseDrawable;
     private Drawable knobDrawable;
     private float knobScaleFactor = 1.0f;
+    private boolean isEditMode = false;
     
     public interface OnJoystickMoveListener {
         void onJoystickMove(float x, float y);
@@ -156,6 +157,13 @@ public class JoystickView extends View {
             canvas.drawCircle(knobPosition.x, knobPosition.y, drawRadius, knobPaint);
             canvas.drawCircle(knobPosition.x, knobPosition.y, drawRadius, strokePaint);
         }
+        
+        if (isEditMode) {
+            Paint editPaint = new Paint();
+            editPaint.setColor(0x88FF0000); // Semi-transparent red
+            editPaint.setStyle(Paint.Style.FILL);
+            canvas.drawCircle(centerX, centerY, baseRadius, editPaint);
+        }
     }
     
     @Override
@@ -240,5 +248,19 @@ public class JoystickView extends View {
     
     public float getAnalogY() {
         return analogY;
+    }
+    
+    @Override
+    public boolean isPointInside(float x, float y) {
+        float dx = x - centerX;
+        float dy = y - centerY;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+        return distance <= baseRadius;
+    }
+
+    @Override
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        invalidate();
     }
 }

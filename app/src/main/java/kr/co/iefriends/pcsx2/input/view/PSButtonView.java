@@ -14,7 +14,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
-public class PSButtonView extends View {
+public class PSButtonView extends View implements EditableControl {
     
     private Paint basePaint;
     private Paint pressedPaint;
@@ -27,6 +27,7 @@ public class PSButtonView extends View {
     private int symbolColor = 0xFFFFFFFF; 
     private boolean isRectangular = false;
     private Drawable iconDrawable;
+    private boolean isEditMode = false;
     
     public interface OnPSButtonListener {
         void onButtonPressed(boolean pressed);
@@ -102,10 +103,8 @@ public class PSButtonView extends View {
             iconDrawable.setState(isPressed ? new int[]{android.R.attr.state_pressed} : new int[]{});
             iconDrawable.setAlpha(isPressed ? 200 : 255);
             iconDrawable.draw(canvas);
-            return;
-        }
-
-        Paint fillPaint = isPressed ? pressedPaint : basePaint;
+        } else {
+            Paint fillPaint = isPressed ? pressedPaint : basePaint;
         
         if (isRectangular) {
             // Windroid-style: larger rounded corners for rectangles
@@ -134,6 +133,20 @@ public class PSButtonView extends View {
             } else {
                 float textY = centerY + symbolPaint.getTextSize() / 3;
                 canvas.drawText(symbol, centerX, textY, symbolPaint);
+            }
+        }
+        } // end of else
+        
+        if (isEditMode) {
+            Paint editPaint = new Paint();
+            editPaint.setColor(0x88FF0000); // Semi-transparent red
+            editPaint.setStyle(Paint.Style.FILL);
+            if (isRectangular) {
+                float cornerRadius = Math.min(bounds.width(), bounds.height()) * 0.25f;
+                canvas.drawRoundRect(bounds, cornerRadius, cornerRadius, editPaint);
+            } else {
+                float radius = Math.min(bounds.width(), bounds.height()) / 2f;
+                canvas.drawCircle(centerX, centerY, radius, editPaint);
             }
         }
     }
@@ -235,6 +248,24 @@ public class PSButtonView extends View {
         }
         
         return false;
+    }
+    
+    @Override
+    public boolean isPointInside(float x, float y) {
+        if (isRectangular) {
+            return bounds.contains(x, y);
+        } else {
+            float dx = x - bounds.centerX();
+            float dy = y - bounds.centerY();
+            float radius = Math.min(bounds.width(), bounds.height()) / 2f;
+            return Math.sqrt(dx * dx + dy * dy) <= radius;
+        }
+    }
+
+    @Override
+    public void setEditMode(boolean editMode) {
+        this.isEditMode = editMode;
+        invalidate();
     }
     
     public void setSymbol(String symbol) {
