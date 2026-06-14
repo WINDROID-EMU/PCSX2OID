@@ -373,7 +373,7 @@ Java_kr_co_iefriends_pcsx2_NativeApp_getDiskInfo(JNIEnv* env, jclass, jstring j_
     } else {
         finalTitle = Path::URLDecode(std::string(Path::GetFileTitle(path)));
     }
-    std::string result = finalTitle + "|" + serial + "|" + region;
+    std::string result = finalTitle + "|" + serial + "|" + region + "|" + StringUtil::StdStringFromFormat("%08X", crc);
     return env->NewStringUTF(result.c_str());
 }
 

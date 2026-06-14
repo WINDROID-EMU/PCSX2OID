@@ -57,6 +57,8 @@ public class CheatManagerDialog extends DialogFragment {
     private MaterialButton btnDownload;
     private ProgressBar  progressBar;
 
+    private View dialogRootView;
+
     // ── Factory ───────────────────────────────────────────────────────────────
 
     public static CheatManagerDialog newInstance(String serial, int crc, String title) {
@@ -201,26 +203,43 @@ public class CheatManagerDialog extends DialogFragment {
         // Verifica disponibilidade online de forma não-bloqueante
         checkOnlineAvailability();
 
-        // Monta o dialog
-        Dialog dialog = new Dialog(ctx,
-                com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(root);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+        try {
+            // Guarda a raiz para ser retornada no onCreateView
+            this.dialogRootView = root;
+
+            // Cria o dialog
+            Dialog dialog = new Dialog(ctx,
+                    com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert);
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT);
+            }
+            return dialog;
+        } catch (Throwable t) {
+            Dialog fallback = new Dialog(ctx);
+            fallback.setTitle("Error loading cheats");
+            return fallback;
         }
-        return dialog;
+    }
+
+    @androidx.annotation.Nullable
+    @Override
+    public View onCreateView(@NonNull android.view.LayoutInflater inflater, @androidx.annotation.Nullable ViewGroup container, @androidx.annotation.Nullable Bundle savedInstanceState) {
+        return dialogRootView;
     }
 
     // ── Carregamento do disco ─────────────────────────────────────────────────
 
     private void loadCheatsFromDisk() {
-        Context ctx = getContext();
-        if (ctx == null) return;
-        cheatEntries = CheatManager.loadCheats(ctx, gameSerial, gameCrc);
-        rebuildCheatList();
+        try {
+            Context ctx = getContext();
+            if (ctx == null) return;
+            cheatEntries = CheatManager.loadCheats(ctx, gameSerial, gameCrc);
+            rebuildCheatList();
+        } catch (Throwable t) {
+            android.util.Log.e(TAG, "Error loading cheats from disk", t);
+        }
     }
 
     private void rebuildCheatList() {
@@ -237,9 +256,16 @@ public class CheatManagerDialog extends DialogFragment {
             return;
         }
 
-        for (int i = 0; i < cheatEntries.size(); i++) {
-            final int idx = i;
-            cheatListContainer.addView(buildCheatCard(ctx, cheatEntries.get(i), idx));
+        try {
+            for (int i = 0; i < cheatEntries.size(); i++) {
+                final int idx = i;
+                cheatListContainer.addView(buildCheatCard(ctx, cheatEntries.get(i), idx));
+            }
+        } catch (Throwable t) {
+            android.util.Log.e(TAG, "Error building cheat list", t);
+            TextView tvError = new TextView(ctx);
+            tvError.setText("Error displaying cheats: " + t.getMessage());
+            cheatListContainer.addView(tvError);
         }
     }
 

@@ -31,16 +31,18 @@ import java.util.concurrent.Executors;
  */
 public class CheatDownloader {
 
-    // ── URLs base ────────────────────────────────────────────────────────────
+    // ── URLs base ─────────────────────────────────────────────────────────────
+    // Repositório principal: WINDROID-EMU/PCSX2OID-CHEATS
     private static final String BASE_CHEATS_URL =
-            "https://raw.githubusercontent.com/PCSX2/cheats/master/%s.pnach";
+            "https://raw.githubusercontent.com/WINDROID-EMU/PCSX2OID-CHEATS/main/cheats/%s.pnach";
 
-    private static final String BASE_WS_URL =
-            "https://raw.githubusercontent.com/PCSX2/widescreen_patches/master/widescreen/%s.pnach";
-
-    // Fallback — mirror via jsDelivr CDN (funciona em redes que bloqueiam raw.github)
+    // jsDelivr CDN como fallback (mais rápido em algumas regiões)
     private static final String CDN_CHEATS_URL =
-            "https://cdn.jsdelivr.net/gh/PCSX2/cheats@master/%s.pnach";
+            "https://cdn.jsdelivr.net/gh/WINDROID-EMU/PCSX2OID-CHEATS@main/cheats/%s.pnach";
+
+    // Fallback 2: repositório oficial PCSX2 (patches/widescreen)
+    private static final String BASE_WS_URL =
+            "https://raw.githubusercontent.com/PCSX2/pcsx2_patches/main/patches/%s.pnach";
 
     private static final int CONNECT_TIMEOUT_MS = 10_000;
     private static final int READ_TIMEOUT_MS    = 20_000;
@@ -130,9 +132,13 @@ public class CheatDownloader {
             return DownloadResult.success(destFile.getAbsolutePath(), count);
         }
 
-        // Tenta as URLs na ordem: GitHub raw → jsDelivr CDN
+        // Tenta URLs na ordem:
+        // 1. GitHub raw – novo repo pcsx2_patches
+        // 2. GitHub raw – widescreen patches
+        // 3. jsDelivr CDN – fallback
         String[] urls = {
             String.format(Locale.US, BASE_CHEATS_URL, crcHex),
+            String.format(Locale.US, BASE_WS_URL, crcHex),
             String.format(Locale.US, CDN_CHEATS_URL, crcHex),
         };
 
@@ -150,7 +156,7 @@ public class CheatDownloader {
         }
 
         return DownloadResult.failure(lastError != null ? lastError
-                : "Cheats não encontrados para CRC " + crcHex + " em nenhuma fonte.");
+                : "Cheats nao encontrados para CRC " + crcHex + " em nenhuma fonte.");
     }
 
     // ── Internos ──────────────────────────────────────────────────────────────
@@ -213,19 +219,29 @@ public class CheatDownloader {
     public static void checkAvailability(int crc, CheckCallback callback) {
         executor.execute(() -> {
             String crcHex = String.format(Locale.US, "%08X", crc);
-            String urlStr = String.format(Locale.US, BASE_CHEATS_URL, crcHex);
+            // Verifica o novo repo primeiro, depois widescreen patches
+            String[] checkUrls = {
+                String.format(Locale.US, BASE_CHEATS_URL, crcHex),
+                String.format(Locale.US, BASE_WS_URL, crcHex),
+            };
             boolean available = false;
-            try {
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setConnectTimeout(8_000);
-                conn.setReadTimeout(8_000);
-                conn.setRequestMethod("HEAD");
-                conn.setRequestProperty("User-Agent", "PCSX2OID/1.0");
-                conn.connect();
-                available = conn.getResponseCode() == HttpURLConnection.HTTP_OK;
-                conn.disconnect();
-            } catch (IOException ignored) {}
+            for (String urlStr : checkUrls) {
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(8_000);
+                    conn.setReadTimeout(8_000);
+                    conn.setRequestMethod("HEAD");
+                    conn.setRequestProperty("User-Agent", "PCSX2OID/1.0");
+                    conn.connect();
+                    if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        available = true;
+                        conn.disconnect();
+                        break;
+                    }
+                    conn.disconnect();
+                } catch (IOException ignored) {}
+            }
             final boolean finalAvailable = available;
             mainHandler.post(() -> callback.onResult(finalAvailable));
         });

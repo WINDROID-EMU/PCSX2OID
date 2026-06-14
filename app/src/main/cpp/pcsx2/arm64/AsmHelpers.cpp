@@ -437,7 +437,7 @@ u8* ArmConstantPool::GetLiteral(const u128& value)
 	if (it != m_literals.end())
 		return m_base_ptr + it->second;
 
-	if (GetRemainingCapacity() < 8)
+	if (GetRemainingCapacity() < sizeof(value))
 		return nullptr;
 
 	const u32 offset = Common::AlignUpPow2(m_used, 16);

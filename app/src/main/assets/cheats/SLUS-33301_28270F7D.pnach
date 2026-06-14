@@ -1,0 +1,60 @@
+// Codes by HippyJ3 - http://hippyj3.blogspot.com/
+// Castlevania - Lament of Innocence [SLUS 207.33] [U] [28270F7D]
+
+gametitle= Castlevania - Lament of Innocence [SLUS 33301] [U] [28270F7D]
+
+//Max Health
+patch=1,EE,20B64800,extended,4479C000
+
+//Infinite Health
+patch=1,EE,20B64AE8,extended,4479C000
+
+//Max MP
+patch=1,EE,20B64844,extended,000003E7
+
+//Infinite MP
+patch=1,EE,20B64848,extended,000003E7
+
+//Max Hearts
+patch=1,EE,20B64804,extended,4479C000
+
+//Infinite Hearts
+patch=1,EE,20B64AEC,extended,4479C000
+
+//Max Gold
+patch=1,EE,20B64820,extended,0098967F
+
+//Infinite Gold
+patch=1,EE,10B64820,extended,0000FFFF
+
+//Have All Skills
+patch=1,EE,20B64AA4,extended,FFFFFFFF
+
+//Max ATK
+patch=1,EE,20B64B80,extended,4479C000
+
+//Max DEF
+patch=1,EE,20B64BA0,extended,4479C000
+
+//Max INT
+patch=1,EE,20B64B84,extended,4479C000
+
+//Max CON
+patch=1,EE,20B64B8C,extended,4479C000
+
+//Max LCK
+patch=1,EE,20B64B90,extended,4479C000
+
+//Always Low Playtime
+patch=1,EE,20B35C24,extended,00000000
+
+//Status Always Good
+patch=1,EE,20B64AF0,extended,00000000
+patch=1,EE,20B64AF4,extended,00000000
+patch=1,EE,20B64AF8,extended,00000000
+
+//Infinite Double Jumps
+patch=1,EE,20462414,extended,00000000
+patch=1,EE,2046242C,extended,00000000
+patch=1,EE,D0B635F0,extended,00300020
+patch=1,EE,20B635F0,extended,00000000

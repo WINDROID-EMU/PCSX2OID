@@ -4554,6 +4554,8 @@ public class MainActivity extends AppCompatActivity {
         isVmPaused = false;
         updatePauseButtonIcon();
         mEmulationThread = new Thread(() -> {
+            // Copy bundled asset cheat (.pnach) for this game before the VM starts
+            copyAssetCheatForGame(m_szGamefile);
             runOnUiThread(() -> {
                 try { if (NativeApp.isFullscreenUIEnabled()) setOnScreenControlsVisible(true); } catch (Throwable ignored) {}
                 try {
@@ -4566,6 +4568,89 @@ public class MainActivity extends AppCompatActivity {
             NativeApp.runVMThread(m_szGamefile);
         });
         mEmulationThread.start();
+    }
+
+    /**
+     * Copia o arquivo .pnach correspondente ao jogo de assets/cheats/ para
+     * <dataRoot>/cheats/ com base no CRC do disco. Se encontrado, ativa cheats
+     * automaticamente para que o PCSX2 os carregue ao iniciar o jogo.
+     *
+     * Os arquivos em assets/cheats/ usam o formato legado: <CRC_HEX_MAIUSCULO>.pnach
+     * (ex.: 2CD5794C.pnach). A cópia só é feita se o arquivo de destino ainda
+     * não existir, preservando cheats que o usuário possa ter editado manualmente.
+     */
+    private void copyAssetCheatForGame(String gamePath) {
+        if (TextUtils.isEmpty(gamePath)) return;
+        try {
+            // getDiskInfo retorna "Título|SERIAL|SERIAL (CRC)" ou null
+            String diskInfo = NativeApp.getDiskInfo(gamePath);
+            if (TextUtils.isEmpty(diskInfo)) return;
+
+            // Extrai o CRC da quarta parte
+            String crcHex = null;
+            String[] parts = diskInfo.split("\\|");
+            if (parts.length >= 4) {
+                crcHex = parts[3].trim().toUpperCase(Locale.US);
+            }
+            if (TextUtils.isEmpty(crcHex) || crcHex.length() != 8) return;
+
+            String assetFileName = crcHex + ".pnach";
+            String assetPath = "cheats" + java.io.File.separator + assetFileName;
+
+            // Verifica se o arquivo existe nos assets
+            android.content.res.AssetManager assets = getApplicationContext().getAssets();
+            String[] listed = assets.list("cheats");
+            if (listed == null) return;
+            boolean found = false;
+            for (String name : listed) {
+                if (name.equalsIgnoreCase(assetFileName)) {
+                    assetFileName = name; // usa o nome exato do arquivo no asset
+                    assetPath = "cheats" + java.io.File.separator + name;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                DebugLog.d("AssetCheats", "Nenhum pnach bundled para CRC " + crcHex);
+                return;
+            }
+
+            // Prepara o diretório de destino
+            File dataRoot = DataDirectoryManager.getDataRoot(getApplicationContext());
+            if (dataRoot == null) return;
+            File cheatsDir = new File(dataRoot, "cheats");
+            if (!cheatsDir.exists() && !cheatsDir.mkdirs()) {
+                DebugLog.e("AssetCheats", "Falha ao criar diretório cheats: " + cheatsDir);
+                return;
+            }
+
+            File destFile = new File(cheatsDir, assetFileName);
+            // Só copia se ainda não existir, para não sobrescrever edições do usuário
+            if (destFile.exists()) {
+                DebugLog.d("AssetCheats", "Pnach já presente em destino: " + destFile);
+                return;
+            }
+
+            // Copia o arquivo
+            try (java.io.InputStream in = assets.open(assetPath);
+                 java.io.FileOutputStream out = new java.io.FileOutputStream(destFile)) {
+                byte[] buf = new byte[8192];
+                int read;
+                while ((read = in.read(buf)) != -1) {
+                    out.write(buf, 0, read);
+                }
+                out.flush();
+                DebugLog.d("AssetCheats", "Pnach copiado: " + assetFileName + " -> " + destFile);
+            }
+
+            // Ativa cheats para que o emulador carregue o pnach
+            try {
+                NativeApp.setEnableCheats(true);
+            } catch (Throwable ignored) {}
+
+        } catch (Throwable e) {
+            try { DebugLog.e("AssetCheats", "Erro ao copiar pnach bundled: " + e.getMessage()); } catch (Throwable ignored) {}
+        }
     }
 
     private void stopEmuThread() {
