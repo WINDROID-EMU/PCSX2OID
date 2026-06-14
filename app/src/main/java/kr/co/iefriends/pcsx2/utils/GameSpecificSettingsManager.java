@@ -43,6 +43,8 @@ public final class GameSpecificSettingsManager {
         @Nullable
         public Boolean precacheTextures;
         @Nullable
+        public Boolean dumpTextures;
+        @Nullable
         public Boolean showFps;
         @Nullable
         public Integer renderer;
@@ -52,7 +54,7 @@ public final class GameSpecificSettingsManager {
         public boolean hasOverrides() {
             return enableCheats != null || widescreen != null || noInterlacing != null
                     || loadTextures != null || asyncTextures != null || precacheTextures != null
-                    || showFps != null || renderer != null || !TextUtils.isEmpty(aspectRatio);
+                    || dumpTextures != null || showFps != null || renderer != null || !TextUtils.isEmpty(aspectRatio);
         }
 
         JSONObject toJson() throws JSONException {
@@ -63,6 +65,7 @@ public final class GameSpecificSettingsManager {
             if (loadTextures != null) obj.put("loadTextures", loadTextures);
             if (asyncTextures != null) obj.put("asyncTextures", asyncTextures);
             if (precacheTextures != null) obj.put("precacheTextures", precacheTextures);
+            if (dumpTextures != null) obj.put("dumpTextures", dumpTextures);
             if (showFps != null) obj.put("showFps", showFps);
             if (renderer != null) obj.put("renderer", renderer);
             if (!TextUtils.isEmpty(aspectRatio)) obj.put("aspectRatio", aspectRatio);
@@ -80,6 +83,7 @@ public final class GameSpecificSettingsManager {
             if (obj.has("loadTextures")) settings.loadTextures = obj.optBoolean("loadTextures");
             if (obj.has("asyncTextures")) settings.asyncTextures = obj.optBoolean("asyncTextures");
             if (obj.has("precacheTextures")) settings.precacheTextures = obj.optBoolean("precacheTextures");
+            if (obj.has("dumpTextures")) settings.dumpTextures = obj.optBoolean("dumpTextures");
             if (obj.has("showFps")) settings.showFps = obj.optBoolean("showFps");
             if (obj.has("renderer")) settings.renderer = obj.optInt("renderer");
             if (obj.has("aspectRatio")) settings.aspectRatio = obj.optString("aspectRatio", null);

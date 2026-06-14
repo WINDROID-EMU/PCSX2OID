@@ -2715,10 +2715,10 @@ bool GSDeviceVK::CheckFeatures()
 		(m_device_features.wideLines && limits.lineWidthRange[0] <= f_upscale && limits.lineWidthRange[1] >= f_upscale);
 
 	// Mobile GPUs (Adreno/Mali) often emulate wide lines/points expensively; prefer vertex expansion there.
-	if (vendorID == 0x5143u || vendorID == 0x13B5u)
+	if (IsAdrenoGPUProfile() || IsMaliGPUProfile())
 	{
 		if (m_features.point_expand || m_features.line_expand)
-			Console.WriteLn("VK: Forcing vertex-based expansion for points/lines on mobile GPU (vendor 0x%X).", vendorID);
+			Console.WriteLn("VK: Forcing vertex-based expansion for points/lines on %s GPU profile.", IsAdrenoGPUProfile() ? "Adreno" : "Mali");
 		m_features.point_expand = false;
 		m_features.line_expand = false;
 	}
@@ -3701,6 +3701,9 @@ static void AddShaderHeader(std::stringstream& ss)
 	ss << "#version 460 core\n";
 	ss << "#extension GL_EXT_samplerless_texture_functions : require\n";
 	ss << "#extension GL_ARB_shader_draw_parameters : require\n";
+
+	AddMacro(ss, "GPU_PROFILE_MALI", dev->IsMaliGPUProfile() ? 1 : 0);
+	AddMacro(ss, "GPU_PROFILE_ADRENO", dev->IsAdrenoGPUProfile() ? 1 : 0);
 
 	if (!features.texture_barrier)
 		ss << "#define DISABLE_TEXTURE_BARRIER 1\n";

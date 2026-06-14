@@ -468,8 +468,16 @@
             android:id="@+id/drawer_sw_precache_textures"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="4dp"
             android:text="@string/per_game_settings_precache_textures"
+            android:textColor="?attr/colorOnSurface" />
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/drawer_sw_dump_textures"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Dump Textures"
             android:textColor="?attr/colorOnSurface" />
 
         <TextView
@@ -541,6 +549,22 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="@string/drawer_settings"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorOnSurface"
+            app:icon="@drawable/ic_settings_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="?attr/colorPrimary"
+            app:iconTintMode="src_in" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/drawer_btn_logs"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="View Logs"
             android:textAllCaps="false"
             android:textColor="?attr/colorOnSurface"
             app:icon="@drawable/ic_settings_24"

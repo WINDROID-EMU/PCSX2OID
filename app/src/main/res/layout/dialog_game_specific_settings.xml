@@ -95,6 +95,12 @@
                 android:text="@string/per_game_settings_precache_textures" />
 
             <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/per_game_switch_dump_textures"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dump Textures" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
                 android:id="@+id/per_game_switch_show_fps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

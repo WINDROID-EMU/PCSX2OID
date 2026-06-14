@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import com.google.android.material.color.DynamicColors;
 
 import kr.co.iefriends.pcsx2.utils.DiscordBridge;
+import kr.co.iefriends.pcsx2.utils.LogcatRecorder;
 
 public class App extends Application {
     private static Context appContext;
@@ -55,6 +56,8 @@ public class App extends Application {
         // Apply Material You !
         DynamicColors.applyToActivitiesIfAvailable(this);
         DiscordBridge.initialize(this);
+        LogcatRecorder.initialize(this);
+        LogcatRecorder.setEnabled(true);
         registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {

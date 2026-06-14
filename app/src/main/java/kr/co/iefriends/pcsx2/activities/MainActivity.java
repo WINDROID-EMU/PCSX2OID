@@ -1466,6 +1466,7 @@ public class MainActivity extends AppCompatActivity {
         MaterialSwitch switchLoadTextures = dialogView.findViewById(R.id.per_game_switch_load_textures);
         MaterialSwitch switchAsyncTextures = dialogView.findViewById(R.id.per_game_switch_async_textures);
         MaterialSwitch switchPrecache = dialogView.findViewById(R.id.per_game_switch_precache_textures);
+        MaterialSwitch switchDumpTextures = dialogView.findViewById(R.id.per_game_switch_dump_textures);
         MaterialSwitch switchShowFps = dialogView.findViewById(R.id.per_game_switch_show_fps);
 
         boolean globalCheats = readBoolSetting("EmuCore", "EnableCheats", false);
@@ -1474,6 +1475,7 @@ public class MainActivity extends AppCompatActivity {
         boolean globalLoadTextures = readBoolSetting("EmuCore/GS", "LoadTextureReplacements", false);
         boolean globalAsyncTextures = readBoolSetting("EmuCore/GS", "LoadTextureReplacementsAsync", false);
         boolean globalPrecache = readBoolSetting("EmuCore/GS", "PrecacheTextureReplacements", false);
+        boolean globalDumpTextures = readBoolSetting("EmuCore/GS", "DumpReplaceableTextures", false);
         boolean globalShowFps = readBoolSetting("EmuCore/GS", "OsdShowFPS", false);
         int globalRenderer = getCurrentRendererValue();
         String globalAspect = getCurrentAspectRatioValue();
@@ -1487,6 +1489,7 @@ public class MainActivity extends AppCompatActivity {
         boolean initialLoadTextures = existing != null && existing.loadTextures != null ? existing.loadTextures : globalLoadTextures;
         boolean initialAsyncTextures = existing != null && existing.asyncTextures != null ? existing.asyncTextures : globalAsyncTextures;
         boolean initialPrecache = existing != null && existing.precacheTextures != null ? existing.precacheTextures : globalPrecache;
+        boolean initialDumpTextures = existing != null && existing.dumpTextures != null ? existing.dumpTextures : globalDumpTextures;
         boolean initialShowFps = existing != null && existing.showFps != null ? existing.showFps : globalShowFps;
         int initialRenderer = existing != null && existing.renderer != null ? existing.renderer : globalRenderer;
         String initialAspect = existing != null && !TextUtils.isEmpty(existing.aspectRatio) ? existing.aspectRatio : globalAspect;
@@ -1498,6 +1501,7 @@ public class MainActivity extends AppCompatActivity {
         switchLoadTextures.setChecked(initialLoadTextures);
         switchAsyncTextures.setChecked(initialAsyncTextures);
         switchPrecache.setChecked(initialPrecache);
+        switchDumpTextures.setChecked(initialDumpTextures);
         switchShowFps.setChecked(initialShowFps);
 
         rendererSpinner.setSelection(rendererSpinnerPositionForValue(initialRenderer), false);
@@ -1555,6 +1559,9 @@ public class MainActivity extends AppCompatActivity {
 
                 boolean precacheValue = switchPrecache.isChecked();
                 if (precacheValue != globalPrecache) toSave.precacheTextures = precacheValue;
+
+                boolean dumpTexturesValue = switchDumpTextures.isChecked();
+                if (dumpTexturesValue != globalDumpTextures) toSave.dumpTextures = dumpTexturesValue;
 
                 boolean showFpsValue = switchShowFps.isChecked();
                 if (showFpsValue != globalShowFps) toSave.showFps = showFpsValue;
@@ -1691,6 +1698,10 @@ public class MainActivity extends AppCompatActivity {
             setNativeSetting("EmuCore/GS", "PrecacheTextureReplacements", "bool", boolToString(settings.precacheTextures));
             applied = true;
         }
+        if (settings.dumpTextures != null) {
+            setNativeSetting("EmuCore/GS", "DumpReplaceableTextures", "bool", boolToString(settings.dumpTextures));
+            applied = true;
+        }
         if (settings.showFps != null) {
             setNativeSetting("EmuCore/GS", "OsdShowFPS", "bool", boolToString(settings.showFps));
             applied = true;
@@ -1731,6 +1742,7 @@ public class MainActivity extends AppCompatActivity {
         setNativeSetting("EmuCore/GS", "LoadTextureReplacements", "bool", snapshot.loadTextures);
         setNativeSetting("EmuCore/GS", "LoadTextureReplacementsAsync", "bool", snapshot.asyncTextures);
         setNativeSetting("EmuCore/GS", "PrecacheTextureReplacements", "bool", snapshot.precacheTextures);
+        setNativeSetting("EmuCore/GS", "DumpReplaceableTextures", "bool", snapshot.dumpTextures);
         setNativeSetting("EmuCore/GS", "OsdShowFPS", "bool", snapshot.showFps);
         setNativeSetting("EmuCore/GS", "Renderer", "int", snapshot.renderer);
         setNativeSetting("EmuCore/GS", "AspectRatio", "string", snapshot.aspectRatio);
@@ -1767,6 +1779,11 @@ public class MainActivity extends AppCompatActivity {
             precache = boolToString(readBoolSetting("EmuCore/GS", "PrecacheTextureReplacements", false));
         }
 
+        String dumpTextures = safeGetSetting("EmuCore/GS", "DumpReplaceableTextures", "bool");
+        if (dumpTextures == null) {
+            dumpTextures = boolToString(readBoolSetting("EmuCore/GS", "DumpReplaceableTextures", false));
+        }
+
         String showFps = safeGetSetting("EmuCore/GS", "OsdShowFPS", "bool");
         if (showFps == null) {
             showFps = boolToString(readBoolSetting("EmuCore/GS", "OsdShowFPS", false));
@@ -1782,7 +1799,7 @@ public class MainActivity extends AppCompatActivity {
             aspect = getCurrentAspectRatioValue();
         }
 
-        return new PerGameOverrideSnapshot(cheats, widescreen, noInterlacing, loadTextures, asyncTextures, precache, showFps, renderer, aspect);
+        return new PerGameOverrideSnapshot(cheats, widescreen, noInterlacing, loadTextures, asyncTextures, precache, dumpTextures, showFps, renderer, aspect);
     }
 
     @Nullable
@@ -1815,6 +1832,7 @@ public class MainActivity extends AppCompatActivity {
         @Nullable final String loadTextures;
         @Nullable final String asyncTextures;
         @Nullable final String precacheTextures;
+        @Nullable final String dumpTextures;
         @Nullable final String showFps;
         @Nullable final String renderer;
         @Nullable final String aspectRatio;
@@ -1825,6 +1843,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Nullable String loadTextures,
                                 @Nullable String asyncTextures,
                                 @Nullable String precacheTextures,
+                                @Nullable String dumpTextures,
                                 @Nullable String showFps,
                                 @Nullable String renderer,
                                 @Nullable String aspectRatio) {
@@ -1834,6 +1853,7 @@ public class MainActivity extends AppCompatActivity {
             this.loadTextures = loadTextures;
             this.asyncTextures = asyncTextures;
             this.precacheTextures = precacheTextures;
+            this.dumpTextures = dumpTextures;
             this.showFps = showFps;
             this.renderer = renderer;
             this.aspectRatio = aspectRatio;
@@ -2320,6 +2340,14 @@ public class MainActivity extends AppCompatActivity {
             btnSettingsDrawer.setOnClickListener(v -> {
                 closeInGameDrawer();
                 startActivityForResult(new Intent(this, SettingsActivity.class), 7722);
+            });
+        }
+
+        MaterialButton btnLogsDrawer = findViewById(R.id.drawer_btn_logs);
+        if (btnLogsDrawer != null) {
+            btnLogsDrawer.setOnClickListener(v -> {
+                closeInGameDrawer();
+                showLogDialog();
             });
         }
 
@@ -2984,6 +3012,17 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        MaterialSwitch swDumpTextures = findViewById(R.id.drawer_sw_dump_textures);
+        if (swDumpTextures != null) {
+            swDumpTextures.setChecked(readBoolSetting("EmuCore/GS", "DumpReplaceableTextures", false));
+            swDumpTextures.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                NativeApp.setSetting("EmuCore/GS", "DumpReplaceableTextures", "bool", isChecked ? "true" : "false");
+                try {
+                    DebugLog.d("Textures", "DumpReplaceableTextures=" + isChecked);
+                } catch (Throwable ignored) {}
+            });
+        }
+
         MaterialSwitch swDevHud = findViewById(R.id.drawer_sw_dev_hud);
         if (swDevHud != null) {
             swDevHud.setChecked(readBoolSetting("EmuCore/GS", "OsdShowFPS", false));
@@ -3110,6 +3149,69 @@ public class MainActivity extends AppCompatActivity {
         .setMessage(message)
         .setPositiveButton(android.R.string.ok, (d, w) -> d.dismiss())
         .show();
+    }
+
+    private void showLogDialog() {
+        // Try to get the game log first, then fall back to the default ANDROID_LOG.txt
+        final File logFile = LogcatRecorder.getGameLogFile();
+        File finalLogFile = logFile;
+        if (finalLogFile == null || !finalLogFile.exists()) {
+            File dataRoot = DataDirectoryManager.getDataRoot(this);
+            if (dataRoot != null) {
+                finalLogFile = new File(dataRoot, "ANDROID_LOG.txt");
+            }
+        }
+
+        StringBuilder logContent = new StringBuilder();
+        if (finalLogFile != null && finalLogFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new java.io.FileReader(finalLogFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    logContent.append(line).append("\n");
+                }
+            } catch (IOException e) {
+                logContent.append("Failed to read log file: ").append(e.getMessage());
+            }
+        } else {
+            logContent.append("No log file found.");
+        }
+
+        // Create a scroll view for the log
+        android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
+        android.widget.TextView textView = new android.widget.TextView(this);
+        textView.setPadding(40, 40, 40, 40);
+        textView.setText(logContent.toString());
+        textView.setTypeface(android.graphics.Typeface.MONOSPACE);
+        textView.setTextSize(12);
+        scrollView.addView(textView);
+
+        final File logFileForShare = finalLogFile; // Need final variable for inner class
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Logs")
+                .setView(scrollView)
+                .setPositiveButton(android.R.string.ok, (d, w) -> d.dismiss())
+                .setNeutralButton("Share", (d, w) -> {
+                    if (logFileForShare != null && logFileForShare.exists()) {
+                        try {
+                            // Use FileProvider to share the file
+                            Uri logUri = androidx.core.content.FileProvider.getUriForFile(
+                                    MainActivity.this,
+                                    getPackageName() + ".fileprovider",
+                                    logFileForShare
+                            );
+                            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                            shareIntent.setType("text/plain");
+                            shareIntent.putExtra(Intent.EXTRA_STREAM, logUri);
+                            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            startActivity(Intent.createChooser(shareIntent, "Share Log"));
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Failed to share log: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "No log file to share.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
     }
 
     private String resolveOnScreenUiStylePreference() {
@@ -4556,6 +4658,16 @@ public class MainActivity extends AppCompatActivity {
         mEmulationThread = new Thread(() -> {
             // Copy bundled asset cheat (.pnach) for this game before the VM starts
             copyAssetCheatForGame(m_szGamefile);
+            // Set game log file
+            try {
+                String diskInfo = NativeApp.getDiskInfo(m_szGamefile);
+                if (diskInfo != null && !diskInfo.isEmpty()) {
+                    String[] parts = diskInfo.split("\\|");
+                    if (parts.length > 0 && !TextUtils.isEmpty(parts[0])) {
+                        LogcatRecorder.setGameLogFile(m_szGamefile, parts[0]);
+                    }
+                }
+            } catch (Throwable ignored) {}
             runOnUiThread(() -> {
                 try { if (NativeApp.isFullscreenUIEnabled()) setOnScreenControlsVisible(true); } catch (Throwable ignored) {}
                 try {
@@ -4673,6 +4785,7 @@ public class MainActivity extends AppCompatActivity {
         setFastForwardEnabled(false);
         isVmPaused = false;
         updatePauseButtonIcon();
+        LogcatRecorder.setGameLogFile(null, null);
     }
 
     private void restartEmuThread() {

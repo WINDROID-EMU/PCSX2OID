@@ -38,6 +38,9 @@ public final class LogcatRecorder {
 	private static boolean sIsRunning;
 	private static Process sLogcatProcess;
 	private static Thread sPumpThread;
+	private static File sGameLogFile;
+	private static FileOutputStream sGameLogFos;
+	private static BufferedOutputStream sGameLogBos;
 
 	private LogcatRecorder() {}
 
@@ -48,6 +51,53 @@ public final class LogcatRecorder {
 		synchronized (LOCK) {
 			if (sAppContext == null)
 				sAppContext = context.getApplicationContext();
+		}
+	}
+
+	public static void setGameLogFile(String isoPath, String gameName) {
+		synchronized (LOCK) {
+			try {
+				if (sGameLogBos != null) {
+					sGameLogBos.flush();
+					sGameLogBos.close();
+				}
+			} catch (IOException e) {
+				Log.w(TAG, "Failed to close previous game log.", e);
+			}
+			
+			if (isoPath != null && gameName != null) {
+				try {
+					File isoFile = new File(isoPath);
+					File parentDir = isoFile.getParentFile();
+					if (parentDir != null && parentDir.exists()) {
+						// Make sure the game name is safe for file names
+						String safeName = gameName.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+						sGameLogFile = new File(parentDir, safeName + ".txt");
+						ensureParent(sGameLogFile);
+						if (sGameLogFile.exists()) {
+							sGameLogFile.delete();
+						}
+						sGameLogFos = new FileOutputStream(sGameLogFile, true);
+						sGameLogBos = new BufferedOutputStream(sGameLogFos);
+						Log.i(TAG, "Game log file set to: " + sGameLogFile.getAbsolutePath());
+					}
+				} catch (Exception e) {
+					Log.e(TAG, "Failed to set game log file.", e);
+					sGameLogFile = null;
+					sGameLogFos = null;
+					sGameLogBos = null;
+				}
+			} else {
+				sGameLogFile = null;
+				sGameLogFos = null;
+				sGameLogBos = null;
+			}
+		}
+	}
+
+	public static File getGameLogFile() {
+		synchronized (LOCK) {
+			return sGameLogFile;
 		}
 	}
 
@@ -85,6 +135,17 @@ public final class LogcatRecorder {
 			sCaptureRequested = false;
 			if (sIsRunning)
 				stopCaptureLocked();
+			try {
+				if (sGameLogBos != null) {
+					sGameLogBos.flush();
+					sGameLogBos.close();
+				}
+			} catch (IOException e) {
+				Log.w(TAG, "Failed to close game log file.", e);
+			}
+			sGameLogFile = null;
+			sGameLogFos = null;
+			sGameLogBos = null;
 			sAppContext = null;
 		}
 	}
@@ -143,6 +204,17 @@ public final class LogcatRecorder {
 			while ((read = in.read(buffer)) != -1) {
 				bos.write(buffer, 0, read);
 				bos.flush();
+
+				synchronized (LOCK) {
+					if (sGameLogBos != null) {
+						try {
+							sGameLogBos.write(buffer, 0, read);
+							sGameLogBos.flush();
+						} catch (IOException e) {
+							Log.w(TAG, "Failed to write to game log file.", e);
+						}
+					}
+				}
 			}
 		} catch (IOException e) {
 			Log.w(TAG, "Logcat capture terminated.", e);
