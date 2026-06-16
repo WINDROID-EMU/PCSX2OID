@@ -280,6 +280,7 @@ private:
 
 	bool m_last_submit_failed = false;
 	bool m_last_present_failed = false;
+	int m_device_loss_count = 0;
 
 	std::map<u32, VkRenderPass> m_render_pass_cache;
 

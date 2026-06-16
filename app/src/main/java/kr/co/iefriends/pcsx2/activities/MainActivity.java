@@ -593,6 +593,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                     intent.setType("*/*");
                     startPickElfLauncher.launch(intent);
                 }
@@ -5137,11 +5138,12 @@ public class MainActivity extends AppCompatActivity {
         try {
             Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             // ENSURE we find this shit
             i.setType("*/*");
             String[] mimeTypes = {
                 "application/octet-stream",
-                "application/x-iso9660-image", 
+                "application/x-iso9660-image",
                 "application/x-cd-image",
                 "application/x-raw-disk-image"
             };
@@ -5687,6 +5689,7 @@ public class MainActivity extends AppCompatActivity {
     private void openPnachPicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         intent.setType("*/*");
         startActivityResultImportPnach.launch(intent);
     }
@@ -5737,10 +5740,10 @@ public class MainActivity extends AppCompatActivity {
     private void launchTextureImportPicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         intent.setType("application/zip");
         intent.putExtra(Intent.EXTRA_TITLE, getString(R.string.drawer_import_textures_picker_title));
         intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/zip", "application/x-zip-compressed"});
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         startActivityResultImportTextures.launch(intent);
     }
 
@@ -6025,6 +6028,7 @@ public class MainActivity extends AppCompatActivity {
     private void SwapDisc() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         intent.setType("*/*");
         String[] mimeTypes = {"application/octet-stream", "application/x-iso9660-image", "application/x-cd-image"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);

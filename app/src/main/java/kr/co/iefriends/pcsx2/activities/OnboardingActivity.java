@@ -219,6 +219,7 @@ public class OnboardingActivity extends AppCompatActivity {
     private void openBiosPicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
         intent.setType("application/octet-stream");
         String[] mimeTypes = new String[]{"application/octet-stream", "application/x-binary"};
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);

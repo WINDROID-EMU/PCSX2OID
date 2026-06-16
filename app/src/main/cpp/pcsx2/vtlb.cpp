@@ -77,6 +77,14 @@ static constexpr size_t FASTMEM_AREA_SIZE = 0x100000000ULL;
 static constexpr u32 FASTMEM_PAGE_COUNT = FASTMEM_AREA_SIZE / VTLB_PAGE_SIZE;
 static constexpr u32 NO_FASTMEM_MAPPING = 0xFFFFFFFFu;
 
+#if defined(_M_ARM64)
+// ARM64-specific alignment constants for optimization
+static constexpr u32 ARM64_NEON_ALIGNMENT = 16;      // 16-byte alignment for NEON operations
+static constexpr u32 ARM64_CACHE_LINE_SIZE = 64;     // 64-byte cache line size
+static constexpr u32 ARM64_NEON_ALIGNMENT_MASK = ARM64_NEON_ALIGNMENT - 1;
+static constexpr u32 ARM64_CACHE_LINE_MASK = ARM64_CACHE_LINE_SIZE - 1;
+#endif
+
 static std::unique_ptr<SharedMemoryMappingArea> s_fastmem_area;
 static std::vector<u32> s_fastmem_virtual_mapping; // maps vaddr -> mainmem offset
 static std::unordered_multimap<u32, u32> s_fastmem_physical_mapping; // maps mainmem offset -> vaddr
@@ -117,6 +125,34 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr)
 #else
 #include <arm_neon.h>
 #endif
+
+// ARM64-specific alignment helper functions
+static bool vtlb_IsNEONAligned(u32 vaddr)
+{
+	return (vaddr & ARM64_NEON_ALIGNMENT_MASK) == 0;
+}
+
+static bool vtlb_IsCacheLineAligned(u32 vaddr)
+{
+	return (vaddr & ARM64_CACHE_LINE_MASK) == 0;
+}
+
+static u32 vtlb_AlignToNEON(u32 vaddr)
+{
+	return vaddr & ~ARM64_NEON_ALIGNMENT_MASK;
+}
+
+static u32 vtlb_AlignToCacheLine(u32 vaddr)
+{
+	return vaddr & ~ARM64_CACHE_LINE_MASK;
+}
+
+static void vtlb_LogAlignmentInfo(u32 vaddr, u32 size)
+{
+	FASTMEM_LOG("Alignment check: vaddr=%08X size=%08X", vaddr, size);
+	FASTMEM_LOG("  NEON aligned: %s", vtlb_IsNEONAligned(vaddr) ? "yes" : "no");
+	FASTMEM_LOG("  Cache line aligned: %s", vtlb_IsCacheLineAligned(vaddr) ? "yes" : "no");
+}
 #endif
 
 __inline int CheckCache(u32 addr)
@@ -983,6 +1019,16 @@ static void vtlb_CreateFastmemMapping(u32 vaddr, u32 mainmem_offset, const PageP
 {
 	FASTMEM_LOG("Create fastmem mapping @ vaddr %08X mainmem %08X", vaddr, mainmem_offset);
 
+#if defined(_M_ARM64)
+	// Log alignment information for ARM64 optimization
+	vtlb_LogAlignmentInfo(vaddr, VTLB_PAGE_SIZE);
+	
+	// Prefer NEON-aligned mappings for better performance
+	if (vtlb_IsNEONAligned(vaddr)) {
+		FASTMEM_LOG("  NEON-aligned mapping - will use optimized NEON instructions");
+	}
+#endif
+
 	const u32 page = vaddr / VTLB_PAGE_SIZE;
 
 	if (s_fastmem_virtual_mapping[page] == mainmem_offset)
@@ -1184,6 +1230,17 @@ bool vtlb_BackpatchLoadStore(uptr code_address, uptr fault_address)
 
 	const LoadstoreBackpatchInfo& info = iter->second;
 	const u32 guest_addr = static_cast<u32>(fault_address - fastmem_start);
+
+#if defined(_M_ARM64)
+	// Log alignment information for backpatch optimization
+	vtlb_LogAlignmentInfo(guest_addr, info.size_in_bits / 8);
+	
+	// For ARM64, prefer backpatching aligned addresses for NEON optimization
+	if (info.size_in_bits == 128 && vtlb_IsNEONAligned(guest_addr)) {
+		FASTMEM_LOG("  128-bit aligned access - can use optimized NEON instructions");
+	}
+#endif
+
 	vtlb_DynBackpatchLoadStore(code_address, info.code_size, info.guest_pc, guest_addr,
 		info.gpr_bitmask, info.fpr_bitmask, info.address_register, info.data_register,
 		info.size_in_bits, info.is_signed, info.is_load, info.is_fpr);

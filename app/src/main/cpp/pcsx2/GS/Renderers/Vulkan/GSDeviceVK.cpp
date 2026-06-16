@@ -21,6 +21,7 @@
 #include "common/Path.h"
 #include "common/ScopedGuard.h"
 
+#include "IconsFontAwesome5.h"
 #include "imgui.h"
 
 #include <bit>
@@ -1175,6 +1176,22 @@ void GSDeviceVK::WaitForCommandBufferCompletion(u32 index)
 	{
 		LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
 		m_last_submit_failed = true;
+		
+		// Track device loss occurrences
+		if (res == VK_ERROR_DEVICE_LOST)
+		{
+			m_device_loss_count++;
+			Console.Error("Vulkan: Device lost detected (occurrence %d). If this happens repeatedly, try switching to the system Vulkan driver.", m_device_loss_count);
+			
+			// If device loss happens multiple times, it's likely the custom driver is unstable
+			if (m_device_loss_count >= 2)
+			{
+				Host::AddIconOSDMessage("VulkanDeviceLoss", ICON_FA_EXCLAMATION_TRIANGLE,
+					"Vulkan device lost multiple times. The custom GPU driver may be unstable. "
+					"Consider switching to the system driver in Settings > Graphics > GPU Driver.",
+					Host::OSD_CRITICAL_ERROR_DURATION);
+			}
+		}
 		return;
 	}
 
@@ -1305,6 +1322,22 @@ void GSDeviceVK::SubmitCommandBuffer(VKSwapChain* present_swap_chain)
 	{
 		LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
 		m_last_submit_failed = true;
+		
+		// Track device loss occurrences
+		if (res == VK_ERROR_DEVICE_LOST)
+		{
+			m_device_loss_count++;
+			Console.Error("Vulkan: Device lost detected during queue submit (occurrence %d). If this happens repeatedly, try switching to the system Vulkan driver.", m_device_loss_count);
+			
+			// If device loss happens multiple times, it's likely the custom driver is unstable
+			if (m_device_loss_count >= 2)
+			{
+				Host::AddIconOSDMessage("VulkanDeviceLoss", ICON_FA_EXCLAMATION_TRIANGLE,
+					"Vulkan device lost multiple times. The custom GPU driver may be unstable. "
+					"Consider switching to the system driver in Settings > Graphics > GPU Driver.",
+					Host::OSD_CRITICAL_ERROR_DURATION);
+			}
+		}
 		return;
 	}
 
@@ -1840,6 +1873,22 @@ void GSDeviceVK::WaitForSpinCompletion(u32 index)
 	{
 		LOG_VULKAN_ERROR(res, "vkWaitForFences failed: ");
 		m_last_submit_failed = true;
+		
+		// Track device loss occurrences
+		if (res == VK_ERROR_DEVICE_LOST)
+		{
+			m_device_loss_count++;
+			Console.Error("Vulkan: Device lost detected in spin completion (occurrence %d). If this happens repeatedly, try switching to the system Vulkan driver.", m_device_loss_count);
+			
+			// If device loss happens multiple times, it's likely the custom driver is unstable
+			if (m_device_loss_count >= 2)
+			{
+				Host::AddIconOSDMessage("VulkanDeviceLoss", ICON_FA_EXCLAMATION_TRIANGLE,
+					"Vulkan device lost multiple times. The custom GPU driver may be unstable. "
+					"Consider switching to the system driver in Settings > Graphics > GPU Driver.",
+					Host::OSD_CRITICAL_ERROR_DURATION);
+			}
+		}
 		return;
 	}
 	SpinCommandCompleted(index);
@@ -2517,6 +2566,9 @@ bool GSDeviceVK::CreateDeviceAndSwapChain()
 	std::unique_lock lock(s_instance_mutex);
 	bool enable_debug_utils = GSConfig.UseDebugDevice;
 	bool enable_validation_layer = GSConfig.UseDebugDevice;
+
+	// Reset device loss counter when creating a new device
+	m_device_loss_count = 0;
 
 	Error error;
 	if (!Vulkan::LoadVulkanLibrary(&error))

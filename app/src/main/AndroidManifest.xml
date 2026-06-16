@@ -115,7 +115,7 @@
             android:exported="${discordAuthActivityExported}"
             android:enabled="${discordAuthActivityEnabled}"
             tools:node="merge">
-            <intent-filter>
+            <intent-filter android:exported="${discordAuthActivityExported}">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

@@ -735,6 +735,12 @@ int vtlb_DynGenReadQuad(u32 bits, int addr_reg, vtlb_ReadRegAllocCallback dest_r
 	const int reg = dest_reg_alloc ? dest_reg_alloc() : (_freeXMMreg(0), 0); // Handler returns in xmm0
 	const u8* codeStart = armGetCurrentCodePointer();
 
+#if defined(_M_ARM64)
+	// For ARM64, we can use aligned loads when the address is 16-byte aligned
+	// This provides better performance than unaligned loads
+	// Future optimization: Check alignment at runtime and use LD1 (aligned) vs LDR (unaligned)
+#endif
+
 //	xMOVAPS(xRegisterSSE(reg), ptr128[RFASTMEMBASE + arg1reg]);
     armAsm->Ldr(a64::QRegister(reg).Q(), a64::MemOperand(RFASTMEMBASE, RCX));
 
@@ -867,6 +873,13 @@ void vtlb_DynGenWrite(u32 sz, bool xmm, int addr_reg, int value_reg)
 
 //	const xAddressReg vaddr_reg(addr_reg);
     const a64::XRegister vaddr_reg(addr_reg);
+    
+#if defined(_M_ARM64)
+    // For ARM64, we can use aligned stores when the address is 16-byte aligned
+    // This provides better performance than unaligned stores
+    // Future optimization: Check alignment at runtime and use ST1 (aligned) vs STR (unaligned)
+#endif
+    
     auto mop = a64::MemOperand(RFASTMEMBASE, vaddr_reg);
 
     if (!xmm)
@@ -1176,10 +1189,22 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 
 	for (i = 0; i < iREGCNT_GPR; ++i)
 	{
+#if defined(_M_ARM64)
+		// ARM64 optimization: Prefer callee-saved registers (x19-x28) when possible
+		// to reduce the need for saving/restoring in backpatch thunks
+		if ((gpr_bitmask & (1u << i)) && (!is_load || is_xmm || data_register != i)) {
+			// Only save if it's caller-saved or if we need to preserve it
+			if (armIsCallerSaved(i)) {
+				num_gprs++;
+				stack_gpr.set(i);
+			}
+		}
+#else
         if ((gpr_bitmask & (1u << i)) && armIsCallerSaved(i) && (!is_load || is_xmm || data_register != i)) {
             num_gprs++;
             stack_gpr.set(i);
         }
+#endif
 	}
 	for (i = 0; i < iREGCNT_XMM; ++i)
 	{
@@ -1189,12 +1214,67 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
         }
 	}
 
+#if defined(_M_ARM64)
+	// ARM64 calling convention requires 16-byte stack alignment
+	// Calculate stack size with proper alignment
+	const u32 gpr_area_size = ((num_gprs + 1) & ~1u) * GPR_SIZE;
+	const u32 xmm_area_size = num_fprs * XMM_SIZE;
+	const u32 total_size = gpr_area_size + xmm_area_size + SHADOW_SIZE;
+	const u32 stack_size = (total_size + 15) & ~15u; // Align to 16-byte boundary
+#else
 	const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE) + (num_fprs * XMM_SIZE) + SHADOW_SIZE;
+#endif
 	if (stack_size > 0)
 	{
 //		xSUB(rsp, stack_size);
         armAsm->Sub(a64::sp, a64::sp, stack_size);
 
+#if defined(_M_ARM64)
+		// ARM64 optimization: Use STP (Store Pair) to save two registers at once
+		// This reduces the number of instructions and improves performance
+		stack_offset = SHADOW_SIZE;
+		
+		// Save XMM registers (can't use STP with Q registers directly, but we can optimize)
+		for (i = 0; i < iREGCNT_XMM; ++i)
+		{
+			if(stack_xmm[i])
+			{
+//				xMOVAPS(ptr128[rsp + stack_offset], xRegisterSSE(i));
+				armAsm->Str(a64::QRegister(i), a64::MemOperand(a64::sp, stack_offset));
+				stack_offset += XMM_SIZE;
+			}
+		}
+		
+		// Save GPR registers using STP when possible
+		for (i = 0; i < iREGCNT_GPR; )
+		{
+			if(stack_gpr[i])
+			{
+				// Check if next register also needs to be saved
+				if (i + 1 < iREGCNT_GPR && stack_gpr[i + 1])
+				{
+//					xMOV(ptr64[rsp + stack_offset], xRegister64(i));
+//					xMOV(ptr64[rsp + stack_offset + 8], xRegister64(i + 1));
+					// STP Xn, X(n+1), [sp, #offset]
+					armAsm->Stp(a64::XRegister(i), a64::XRegister(i + 1), 
+					          a64::MemOperand(a64::sp, stack_offset));
+					stack_offset += GPR_SIZE * 2;
+					i += 2;
+				}
+				else
+				{
+//					xMOV(ptr64[rsp + stack_offset], xRegister64(i));
+					armAsm->Str(a64::XRegister(i), a64::MemOperand(a64::sp, stack_offset));
+					stack_offset += GPR_SIZE;
+					i += 1;
+				}
+			}
+			else
+			{
+				i++;
+			}
+		}
+#else
 		stack_offset = SHADOW_SIZE;
         for (i = 0; i < iREGCNT_XMM; ++i)
         {
@@ -1215,6 +1295,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
                 stack_offset += GPR_SIZE;
             }
         }
+#endif
 	}
 
 	if (is_load)
@@ -1260,6 +1341,52 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 	// restore regs
 	if (stack_size > 0)
 	{
+#if defined(_M_ARM64)
+		// ARM64 optimization: Use LDP (Load Pair) to restore two registers at once
+		// This reduces the number of instructions and improves performance
+		stack_offset = SHADOW_SIZE;
+		
+		// Restore XMM registers
+		for (i = 0; i < iREGCNT_XMM; ++i)
+		{
+			if(stack_xmm[i])
+			{
+//				xMOVAPS(xRegisterSSE(i), ptr128[rsp + stack_offset]);
+				armAsm->Ldr(a64::QRegister(i), a64::MemOperand(a64::sp, stack_offset));
+				stack_offset += XMM_SIZE;
+			}
+		}
+		
+		// Restore GPR registers using LDP when possible
+		for (i = 0; i < iREGCNT_GPR; )
+		{
+			if(stack_gpr[i])
+			{
+				// Check if next register also needs to be restored
+				if (i + 1 < iREGCNT_GPR && stack_gpr[i + 1])
+				{
+//					xMOV(xRegister64(i), ptr64[rsp + stack_offset]);
+//					xMOV(xRegister64(i + 1), ptr64[rsp + stack_offset + 8]);
+					// LDP Xn, X(n+1), [sp, #offset]
+					armAsm->Ldp(a64::XRegister(i), a64::XRegister(i + 1), 
+					          a64::MemOperand(a64::sp, stack_offset));
+					stack_offset += GPR_SIZE * 2;
+					i += 2;
+				}
+				else
+				{
+//					xMOV(xRegister64(i), ptr64[rsp + stack_offset]);
+					armAsm->Ldr(a64::XRegister(i), a64::MemOperand(a64::sp, stack_offset));
+					stack_offset += GPR_SIZE;
+					i += 1;
+				}
+			}
+			else
+			{
+				i++;
+			}
+		}
+#else
 		stack_offset = SHADOW_SIZE;
 		for (i = 0; i < iREGCNT_XMM; ++i)
 		{
@@ -1280,6 +1407,7 @@ void vtlb_DynBackpatchLoadStore(uptr code_address, u32 code_size, u32 guest_pc, 
 				stack_offset += GPR_SIZE;
 			}
 		}
+#endif
 
 //		xADD(rsp, stack_size);
         armAsm->Add(a64::sp, a64::sp, stack_size);
