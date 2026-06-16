@@ -66,7 +66,6 @@ import java.util.Enumeration;
 import kr.co.iefriends.pcsx2.input.ControllerMappingDialog;
 import kr.co.iefriends.pcsx2.BuildConfig;
 import kr.co.iefriends.pcsx2.provider.Armsx2DocumentsProvider;
-import kr.co.iefriends.pcsx2.utils.AppIconManager;
 import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
 import kr.co.iefriends.pcsx2.utils.DiscordBridge;
 import kr.co.iefriends.pcsx2.utils.LogcatRecorder;
@@ -88,10 +87,9 @@ public class SettingsActivity extends AppCompatActivity {
 	private static final int SECTION_PERFORMANCE = 2;
 	private static final int SECTION_STATS = 3;
 	private static final int SECTION_CONTROLLER = 4;
-	private static final int SECTION_CUSTOMIZATION = 5;
-	private static final int SECTION_STORAGE = 6;
-    private static final int SECTION_MEMORY = 7;
-	private static final int SECTION_ACHIEVEMENTS = 8;
+	private static final int SECTION_STORAGE = 5;
+    private static final int SECTION_MEMORY = 6;
+	private static final int SECTION_ACHIEVEMENTS = 7;
 	private static final String PREF_GPU_PROFILE_OVERRIDE_FALLBACK = "gpu_profile_override_fallback";
 	private static final String STATE_SELECTED_SECTION = "settings_selected_section";
 	private static final String EXTRA_SHOW_ADVANCED = "android.provider.extra.SHOW_ADVANCED";
@@ -111,8 +109,6 @@ public class SettingsActivity extends AppCompatActivity {
 	private View groupDiscordIdentity;
 	private ShapeableImageView imgDiscordAvatar;
 	private TextView tvDiscordLoggedInAs;
-	private TextView tvOnScreenUiStyleValue;
-	private TextView tvAppIconValue;
 	private MaterialButton btnDiscordLogout;
     private MaterialSwitch switchRaEnabled;
     private MaterialSwitch switchRaHardcore;
@@ -168,7 +164,6 @@ public class SettingsActivity extends AppCompatActivity {
 		initializeControllerSettings();
 		initializePerformanceSettings();
 		initializeStatsSettings();
-		initializeCustomizationSettings();
 		initializeMemoryCardSettings();
 		initializeStorageSettings();
 		initializeActionButtons();
@@ -192,9 +187,6 @@ public class SettingsActivity extends AppCompatActivity {
 		super.onResume();
 		DiscordBridge.updateEngineActivity(this);
         updateDataDirSummary();
-        updateOnScreenUiStyleSummary();
-		updateAppIconSummary();
-		AppIconManager.applyTaskDescription(this);
         updateDiscordUi(DiscordBridge.isLoggedIn());
         RetroAchievementsBridge.refreshState();
     }
@@ -1883,140 +1875,6 @@ public class SettingsActivity extends AppCompatActivity {
 		}
     }
 
-	private void initializeCustomizationSettings() {
-		MaterialButton btnUiStyle = findViewById(R.id.btn_on_screen_ui_style);
-		tvOnScreenUiStyleValue = findViewById(R.id.tv_on_screen_ui_style_value);
-		updateOnScreenUiStyleSummary();
-		if (btnUiStyle != null) {
-			btnUiStyle.setOnClickListener(v -> showOnScreenUiStyleDialog());
-		}
-
-		MaterialButton btnChangeAppIcon = findViewById(R.id.btn_change_app_icon);
-		tvAppIconValue = findViewById(R.id.tv_app_icon_value);
-		updateAppIconSummary();
-		if (btnChangeAppIcon != null) {
-			btnChangeAppIcon.setOnClickListener(v -> showAppIconPickerDialog());
-		}
-	}
-
-	private void updateOnScreenUiStyleSummary() {
-		if (tvOnScreenUiStyleValue == null) {
-			return;
-		}
-		String current = getSharedPreferences("armsx2", MODE_PRIVATE)
-				.getString("on_screen_ui_style", "default");
-		int labelRes = "nether".equalsIgnoreCase(current)
-				? R.string.on_screen_ui_style_nether
-				: R.string.on_screen_ui_style_default;
-		tvOnScreenUiStyleValue.setText(labelRes);
-	}
-
-	private void updateAppIconSummary() {
-		if (tvAppIconValue == null) {
-			return;
-		}
-		AppIconManager.AppIconOption option = AppIconManager.getCurrentSelection(this);
-		String label = option != null ? option.displayName : getString(R.string.settings_app_icon_default);
-		tvAppIconValue.setText(getString(R.string.settings_app_icon_summary, label));
-	}
-
-	private void showOnScreenUiStyleDialog() {
-		final String prefName = "armsx2";
-		final String prefKey = "on_screen_ui_style";
-		String current = getSharedPreferences(prefName, MODE_PRIVATE)
-				.getString(prefKey, "default");
-		int checked = "nether".equalsIgnoreCase(current) ? 1 : 0;
-		CharSequence[] options = new CharSequence[]{
-				getString(R.string.on_screen_ui_style_default),
-				getString(R.string.on_screen_ui_style_nether)
-		};
-		new MaterialAlertDialogBuilder(this)
-				.setTitle(R.string.dialog_on_screen_ui_style_title)
-				.setSingleChoiceItems(options, checked, (dialog, which) -> {
-					String selected = which == 1 ? "nether" : "default";
-					if (!selected.equalsIgnoreCase(current)) {
-						getSharedPreferences(prefName, MODE_PRIVATE)
-								.edit()
-								.putString(prefKey, selected)
-								.apply();
-						updateOnScreenUiStyleSummary();
-					}
-					dialog.dismiss();
-				})
-				.setNegativeButton(android.R.string.cancel, null)
-				.show();
-	}
-
-	private void showAppIconPickerDialog() {
-		if (isFinishing() || isDestroyed()) {
-			return;
-		}
-		List<AppIconManager.AppIconOption> options = AppIconManager.getAvailableIcons(this);
-		if (options.size() <= 1) {
-			try {
-				Toast.makeText(this, R.string.settings_app_icon_picker_empty, Toast.LENGTH_SHORT).show();
-			} catch (Throwable ignored) {}
-			return;
-		}
-		AppIconManager.AppIconOption current = AppIconManager.getCurrentSelection(this);
-		AppIconOptionAdapter adapter = new AppIconOptionAdapter(this, options);
-		AlertDialog dialog = new MaterialAlertDialogBuilder(this)
-				.setTitle(R.string.settings_app_icon_picker_title)
-				.setNegativeButton(android.R.string.cancel, null)
-				.setAdapter(adapter, (d, which) -> {
-					AppIconManager.AppIconOption option = adapter.getItem(which);
-					if (option != null) {
-						handleAppIconSelection(option);
-					}
-				})
-				.create();
-		dialog.setOnShowListener(d -> {
-			ListView listView = dialog.getListView();
-			if (listView == null) {
-				return;
-			}
-			listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-			int index = adapter.indexOf(current.id);
-			if (index >= 0) {
-				listView.setItemChecked(index, true);
-				listView.setSelection(index);
-			}
-			listView.setOnItemClickListener((parent, view, position, id) -> {
-				AppIconManager.AppIconOption option = adapter.getItem(position);
-				if (option != null) {
-					dialog.dismiss();
-					handleAppIconSelection(option);
-				}
-			});
-		});
-		dialog.show();
-	}
-
-	private void handleAppIconSelection(@NonNull AppIconManager.AppIconOption option) {
-		AppIconManager.saveSelection(this, option);
-		updateAppIconSummary();
-		AppIconManager.applyTaskDescription(this);
-		boolean showApplyNotice = true;
-		if (option.assetPath != null) {
-			boolean pinned = AppIconManager.requestPinnedShortcut(this, option);
-			if (pinned) {
-				showApplyNotice = false;
-				try {
-					Toast.makeText(this, getString(R.string.settings_app_icon_pin_success, option.displayName), Toast.LENGTH_SHORT).show();
-				} catch (Throwable ignored) {}
-			} else {
-				try {
-					Toast.makeText(this, R.string.settings_app_icon_pin_not_supported, Toast.LENGTH_SHORT).show();
-				} catch (Throwable ignored) {}
-			}
-		}
-		if (showApplyNotice) {
-			try {
-				Toast.makeText(this, R.string.settings_app_icon_apply_notice, Toast.LENGTH_SHORT).show();
-			} catch (Throwable ignored) {}
-		}
-	}
-
     private void initializeMemoryCardSettings() {
         View btnCreateCard = findViewById(R.id.btn_create_card);
         if (btnCreateCard != null) {
@@ -2476,7 +2334,6 @@ public class SettingsActivity extends AppCompatActivity {
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_performance));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_stats));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_controller));
-                sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_customization));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_storage));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_memory));
                 sectionTabs.addTab(sectionTabs.newTab().setText(R.string.settings_section_achievements));
@@ -2550,7 +2407,6 @@ public class SettingsActivity extends AppCompatActivity {
             case SECTION_PERFORMANCE: return R.string.settings_section_performance;
             case SECTION_STATS: return R.string.settings_section_stats;
             case SECTION_CONTROLLER: return R.string.settings_section_controller;
-            case SECTION_CUSTOMIZATION: return R.string.settings_section_customization;
             case SECTION_STORAGE: return R.string.settings_section_storage;
             case SECTION_MEMORY: return R.string.settings_section_memory;
             case SECTION_ACHIEVEMENTS: return R.string.settings_section_achievements;
@@ -2564,7 +2420,6 @@ public class SettingsActivity extends AppCompatActivity {
         if (buttonId == R.id.btn_section_performance) return SECTION_PERFORMANCE;
         if (buttonId == R.id.btn_section_stats) return SECTION_STATS;
         if (buttonId == R.id.btn_section_controller) return SECTION_CONTROLLER;
-        if (buttonId == R.id.btn_section_customization) return SECTION_CUSTOMIZATION;
         if (buttonId == R.id.btn_section_storage) return SECTION_STORAGE;
         if (buttonId == R.id.btn_section_memory) return SECTION_MEMORY;
         if (buttonId == R.id.btn_section_achievements) return SECTION_ACHIEVEMENTS;
@@ -2577,7 +2432,6 @@ public class SettingsActivity extends AppCompatActivity {
             case SECTION_PERFORMANCE: return R.id.btn_section_performance;
             case SECTION_STATS: return R.id.btn_section_stats;
             case SECTION_CONTROLLER: return R.id.btn_section_controller;
-            case SECTION_CUSTOMIZATION: return R.id.btn_section_customization;
             case SECTION_STORAGE: return R.id.btn_section_storage;
             case SECTION_MEMORY: return R.id.btn_section_memory;
             case SECTION_ACHIEVEMENTS: return R.id.btn_section_achievements;
@@ -2966,83 +2820,6 @@ public class SettingsActivity extends AppCompatActivity {
 			return true;
 		} catch (Exception e) {
 			return false;
-		}
-	}
-
-	private static final class AppIconOptionAdapter extends BaseAdapter {
-		private final LayoutInflater inflater;
-		private final List<AppIconManager.AppIconOption> options;
-		private final Context context;
-		private final Map<String, Bitmap> iconCache = new HashMap<>();
-		private final int previewSizePx;
-
-		AppIconOptionAdapter(@NonNull Context context, @NonNull List<AppIconManager.AppIconOption> options) {
-			this.inflater = LayoutInflater.from(context);
-			this.context = context;
-			this.options = options;
-			float density = context.getResources().getDisplayMetrics().density;
-			this.previewSizePx = Math.max(1, Math.round(40f * density));
-		}
-
-		int indexOf(@NonNull String id) {
-			for (int i = 0; i < options.size(); i++) {
-				AppIconManager.AppIconOption option = options.get(i);
-				if (TextUtils.equals(option.id, id)) {
-					return i;
-				}
-			}
-			return -1;
-		}
-
-		@Override
-		public int getCount() {
-			return options.size();
-		}
-
-		@Override
-		public AppIconManager.AppIconOption getItem(int position) {
-			return options.get(position);
-		}
-
-		@Override
-		public long getItemId(int position) {
-			return position;
-		}
-
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View view = convertView;
-			ViewHolder holder;
-			if (view == null) {
-				view = inflater.inflate(R.layout.dialog_list_item_app_icon, parent, false);
-				holder = new ViewHolder();
-				holder.icon = view.findViewById(R.id.img_app_icon_preview);
-				holder.label = view.findViewById(R.id.tv_app_icon_label);
-				view.setTag(holder);
-			} else {
-				holder = (ViewHolder) view.getTag();
-			}
-
-			AppIconManager.AppIconOption option = getItem(position);
-			holder.label.setText(option.displayName);
-			Bitmap bitmap = iconCache.get(option.id);
-			if (bitmap == null) {
-				bitmap = AppIconManager.loadIconBitmap(context, option, previewSizePx);
-				if (bitmap != null) {
-					iconCache.put(option.id, bitmap);
-				}
-			}
-			if (bitmap != null) {
-				holder.icon.setImageBitmap(bitmap);
-			} else {
-				holder.icon.setImageResource(R.mipmap.ic_launcher);
-			}
-			return view;
-		}
-
-		private static final class ViewHolder {
-			ImageView icon;
-			TextView label;
 		}
 	}
 }
