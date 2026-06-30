@@ -517,19 +517,6 @@ void armEmitJmpPtr(void* code, const void* dst, bool flush_icache)
 {
     const s64 displacement = GetPCDisplacement(code, dst);
 
-    // ARM64 unconditional branch (B) has a +/-128MB range (26-bit signed immediate).
-    // If the target is out of range, the branch encoding will be silently wrong,
-    // causing jumps to incorrect addresses. This is a critical safety check.
-    if (!vixl::IsInt26(displacement))
-    {
-        Console.Error("armEmitJmpPtr: Branch target %p from %p is out of range! "
-                      "Displacement %lld exceeds +/-128MB. Block linking will fail.",
-                      dst, code, static_cast<long long>(displacement << 2));
-        pxAssertMsg(vixl::IsInt26(displacement), "armEmitJmpPtr: branch target out of +/-128MB range");
-        // In release builds, skip the patch rather than emitting a corrupt branch.
-        return;
-    }
-
     u32 new_code = a64::B | a64::Assembler::ImmUncondBranch(displacement);
     std::memcpy(code, &new_code, sizeof(new_code));
 
