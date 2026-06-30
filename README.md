@@ -1,6 +1,6 @@
 <div align="center">
 
-![PCSX2OID](app_icons/icon.png)
+![PCSX2OID](app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp)
 
 # PCSX2OID
 
