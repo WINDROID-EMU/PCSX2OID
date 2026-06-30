@@ -87,7 +87,7 @@ jobs:
     needs: [ build ]
 
     if: >
-      github.repository == 'ARMSX2/ARMSX2' &&
+      github.repository == 'WINDROID-EMU/PCSX2OID' &&
       github.ref == 'refs/heads/master'
 
     runs-on: ubuntu-latest
