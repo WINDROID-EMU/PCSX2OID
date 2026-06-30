@@ -10,12 +10,12 @@ import com.facebook.react.uimanager.ViewManager;
 import java.util.Collections;
 import java.util.List;
 
-public class Armsx2ReactPackage implements ReactPackage {
+public class Pcsx2oidReactPackage implements ReactPackage {
 
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        return Collections.singletonList(new Armsx2NativeModule(reactContext));
+        return Collections.singletonList(new Pcsx2oidNativeModule(reactContext));
     }
 
     @NonNull

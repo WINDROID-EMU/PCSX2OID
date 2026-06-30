@@ -63,7 +63,7 @@ export default function SideDrawer({ open, onClose, colors, headerImage, items }
           ) : null}
           <View style={styles.headerOverlay} />
           <View style={styles.headerTextWrap}>
-            <Text style={[styles.headerTitle, { color: colors.onSurface }]}>ARMSX2</Text>
+            <Text style={[styles.headerTitle, { color: colors.onSurface }]}>PCSX2OID</Text>
             <Text style={[styles.headerSub, { color: colors.onSurfaceVariant }]}>Game Selector</Text>
           </View>
         </View>

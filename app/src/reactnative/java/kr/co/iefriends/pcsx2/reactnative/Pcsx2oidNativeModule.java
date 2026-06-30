@@ -23,17 +23,17 @@ import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
 import kr.co.iefriends.pcsx2.utils.DiscordBridge;
 import kr.co.iefriends.pcsx2.utils.RetroAchievementsBridge;
 
-public class Armsx2NativeModule extends ReactContextBaseJavaModule
+public class Pcsx2oidNativeModule extends ReactContextBaseJavaModule
         implements RetroAchievementsBridge.Listener, DiscordBridge.DiscordStateListener {
 
-    static final String NAME = "Armsx2Bridge";
-    private static final String EVENT_RA_STATE = "armsx2.retroAchievements";
-    private static final String EVENT_RA_LOGIN = "armsx2.retroAchievementsLogin";
-    private static final String EVENT_DISCORD = "armsx2.discord";
+    static final String NAME = "Pcsx2oidBridge";
+    private static final String EVENT_RA_STATE = "pcsx2oid.retroAchievements";
+    private static final String EVENT_RA_LOGIN = "pcsx2oid.retroAchievementsLogin";
+    private static final String EVENT_DISCORD = "pcsx2oid.discord";
 
     private final ReactApplicationContext reactContext;
 
-    Armsx2NativeModule(ReactApplicationContext context) {
+    Pcsx2oidNativeModule(ReactApplicationContext context) {
         super(context);
         this.reactContext = context;
         NativeApp.initializeOnce(context.getApplicationContext());
@@ -64,7 +64,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
 
     private boolean ensureNativeAvailable(Promise promise) {
         if (NativeApp.hasNoNativeBinary) {
-            promise.reject("armsx2_native_missing", "Native ARMSX2 binary not bundled in this build.");
+            promise.reject("pcsx2oid_native_missing", "Native PCSX2OID binary not bundled in this build.");
             return false;
         }
         return true;
@@ -174,11 +174,11 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
     public void beginDiscordLogin(Promise promise) {
         Activity activity = getCurrentActivity();
         if (activity == null) {
-            promise.reject("armsx2_no_activity", "No activity to start Discord auth");
+            promise.reject("pcsx2oid_no_activity", "No activity to start Discord auth");
             return;
         }
         if (!DiscordBridge.isAvailable()) {
-            promise.reject("armsx2_discord_unavailable", "Discord SDK not bundled for this build");
+            promise.reject("pcsx2oid_discord_unavailable", "Discord SDK not bundled for this build");
             return;
         }
         DiscordBridge.beginAuthorize(activity);
@@ -230,13 +230,13 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
     public void convertIsoToChd(String path, Promise promise) {
         if (!ensureNativeAvailable(promise)) return;
         if (!NativeApp.hasNativeTools) {
-            promise.reject("armsx2_native_tools_missing", "Native tools library not bundled in this build.");
+            promise.reject("pcsx2oid_native_tools_missing", "Native tools library not bundled in this build.");
             return;
         }
         new Thread(() -> {
             int result = NativeApp.convertIsoToChd(path);
             promise.resolve(result);
-        }, "ARMSX2-CHD").start();
+        }, "PCSX2OID-CHD").start();
     }
 
     @ReactMethod
@@ -270,7 +270,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
             map.putInt("databaseSize", CheatDatabase.getDatabaseSize());
             promise.resolve(map);
         } catch (Throwable t) {
-            promise.reject("armsx2_game_info_error", t.getMessage());
+            promise.reject("pcsx2oid_game_info_error", t.getMessage());
         }
     }
 
@@ -295,7 +295,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
             }
             promise.resolve(arr);
         } catch (Throwable t) {
-            promise.reject("armsx2_cheats_error", t.getMessage());
+            promise.reject("pcsx2oid_cheats_error", t.getMessage());
         }
     }
 
@@ -328,7 +328,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
             }
             promise.resolve(ok);
         } catch (Throwable t) {
-            promise.reject("armsx2_save_cheats_error", t.getMessage());
+            promise.reject("pcsx2oid_save_cheats_error", t.getMessage());
         }
     }
 
@@ -342,7 +342,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
             NativeApp.reloadCheats();
             promise.resolve(true);
         } catch (Throwable t) {
-            promise.reject("armsx2_reload_cheats_error", t.getMessage());
+            promise.reject("pcsx2oid_reload_cheats_error", t.getMessage());
         }
     }
 
@@ -362,7 +362,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
                 promise.resolve(available);
             });
         } catch (Throwable t) {
-            promise.reject("armsx2_check_cheats_error", t.getMessage());
+            promise.reject("pcsx2oid_check_cheats_error", t.getMessage());
         }
     }
 
@@ -376,7 +376,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
             String serial = NativeApp.getGameSerial();
             int crc = NativeApp.getGameCRC();
             if (crc == 0 || TextUtils.isEmpty(serial)) {
-                promise.reject("armsx2_download_cheats_error", "Nenhum jogo em execução ou ID inválido.");
+                promise.reject("pcsx2oid_download_cheats_error", "Nenhum jogo em execução ou ID inválido.");
                 return;
             }
             CheatDownloader.downloadCheats(reactContext, serial, crc, true, result -> {
@@ -390,7 +390,7 @@ public class Armsx2NativeModule extends ReactContextBaseJavaModule
                 promise.resolve(map);
             });
         } catch (Throwable t) {
-            promise.reject("armsx2_download_cheats_error", t.getMessage());
+            promise.reject("pcsx2oid_download_cheats_error", t.getMessage());
         }
     }
     // endregion

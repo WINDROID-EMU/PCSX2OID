@@ -42,7 +42,7 @@ def sanitizeScheme = { String raw ->
     return trimmed
 }
 def discordSchemeFromEnv = sanitizeScheme(discordProps.getProperty("APPLICATION_SCHEME", ""))
-def discordCallbackScheme = discordSchemeFromEnv ? discordSchemeFromEnv : (discordApplicationId ? "discord-${discordApplicationId}" : "armsx2")
+def discordCallbackScheme = discordSchemeFromEnv ? discordSchemeFromEnv : (discordApplicationId ? "discord-${discordApplicationId}" : "pcsx2oid")
 def isDiscordSdkAvailable = file("${project.projectDir}/libs/discord_partner_sdk.aar").exists()
 
 android {
@@ -60,7 +60,7 @@ android {
         versionName "1.0.8"
 
         // APK
-        def baseName = 'ARMSX2'
+        def baseName = 'PCSX2OID'
         setProperty('archivesBaseName', "${baseName}_${versionCode}_${new Date().format('yyyyMMddHHmm')}${isSwitchBuild ? '-switch' : ''}")
 
         externalNativeBuild {
@@ -88,7 +88,7 @@ android {
         buildConfigField "boolean", "ENABLE_RN", enableRN ? "true" : "false"
         buildConfigField "boolean", "DISCORD_INTEGRATION_ENABLED", isDiscordSdkAvailable ? "true" : "false"
         buildConfigField "boolean", "IS_GOOGLE_PLAY_BUILD", "false"
-    resValue "bool", "armsx2_documents_provider_enabled", "true"
+    resValue "bool", "pcsx2oid_documents_provider_enabled", "true"
     }
 
     productFlavors {
@@ -98,11 +98,11 @@ android {
         googlePlay {
             dimension "distribution"
             buildConfigField "boolean", "IS_GOOGLE_PLAY_BUILD", "true"
-            resValue "bool", "armsx2_documents_provider_enabled", "true"
+            resValue "bool", "pcsx2oid_documents_provider_enabled", "true"
         }
     }
 
-    def keystorePropertiesFile = rootProject.file("app/armsx2_keystore.properties")
+    def keystorePropertiesFile = rootProject.file("app/pcsx2oid_keystore.properties")
     def keystoreProperties = new Properties()
     if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(new FileInputStream(keystorePropertiesFile))

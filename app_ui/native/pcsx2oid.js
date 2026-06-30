@@ -1,6 +1,6 @@
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
-const MODULE_NAME = 'Armsx2Bridge';
+const MODULE_NAME = 'Pcsx2oidBridge';
 const Native = NativeModules[MODULE_NAME];
 const emitter = Native ? new NativeEventEmitter(Native) : null;
 
@@ -28,12 +28,12 @@ async function safeCall(fn, fallback = null) {
 }
 
 export const subscribeToRetroAchievements = (listener) =>
-  emitter?.addListener('armsx2.retroAchievements', listener);
+  emitter?.addListener('pcsx2oid.retroAchievements', listener);
 
 export const subscribeToRetroAchievementsLogin = (listener) =>
-  emitter?.addListener('armsx2.retroAchievementsLogin', listener);
+  emitter?.addListener('pcsx2oid.retroAchievementsLogin', listener);
 
-export const subscribeToDiscord = (listener) => emitter?.addListener('armsx2.discord', listener);
+export const subscribeToDiscord = (listener) => emitter?.addListener('pcsx2oid.discord', listener);
 
 export function isAvailable() {
   return Boolean(Native);

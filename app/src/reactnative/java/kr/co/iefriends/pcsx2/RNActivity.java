@@ -80,7 +80,7 @@ public class RNActivity extends AppCompatActivity implements DefaultHardwareBack
 
             reactInstanceManager = builder.build();
 
-            final String appName = "ARMSX2RN";
+            final String appName = "PCSX2OIDRN";
             reactRootView.startReactApplication(reactInstanceManager, appName, null);
             setContentView(reactRootView);
         } catch (Throwable t) {

@@ -6,7 +6,7 @@ export default function HomeScreen({ navigation, colors }) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }] }>
       <View style={[styles.card, { backgroundColor: colors.surfaceContainer }] }>
-        <Text style={[styles.title, { color: colors.onSurface }]}>ARMSX2</Text>
+        <Text style={[styles.title, { color: colors.onSurface }]}>PCSX2OID</Text>
         <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>React Native powered UI</Text>
         <Text style={[styles.body, { color: colors.onSurfaceVariant }]}>Home screen</Text>
   <View style={{ height: 12 }} />

@@ -24,11 +24,11 @@ import java.util.Comparator;
 import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
 
 /**
- * DocumentsProvider exposing the ARMSX2 data directory through the Storage Access Framework.
+ * DocumentsProvider exposing the PCSX2OID data directory through the Storage Access Framework.
  */
-public class Armsx2DocumentsProvider extends DocumentsProvider {
+public class Pcsx2oidDocumentsProvider extends DocumentsProvider {
     public static final String AUTHORITY_SUFFIX = ".documents";
-    private static final String ROOT_ID = "armsx2-root";
+    private static final String ROOT_ID = "pcsx2oid-root";
     private static final String DOC_ID_PREFIX = "path:";
     private static final String[] DEFAULT_ROOT_PROJECTION = new String[]{
             Root.COLUMN_ROOT_ID,
@@ -393,6 +393,6 @@ public class Armsx2DocumentsProvider extends DocumentsProvider {
     }
 
     private static boolean isHiddenHelper(String name) {
-        return ".armsx2_write_probe".equals(name);
+        return ".pcsx2oid_write_probe".equals(name);
     }
 }

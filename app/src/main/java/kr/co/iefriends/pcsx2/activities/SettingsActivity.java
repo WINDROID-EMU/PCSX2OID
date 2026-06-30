@@ -65,7 +65,7 @@ import java.util.Enumeration;
 
 import kr.co.iefriends.pcsx2.input.ControllerMappingDialog;
 import kr.co.iefriends.pcsx2.BuildConfig;
-import kr.co.iefriends.pcsx2.provider.Armsx2DocumentsProvider;
+import kr.co.iefriends.pcsx2.provider.Pcsx2oidDocumentsProvider;
 import kr.co.iefriends.pcsx2.utils.DataDirectoryManager;
 import kr.co.iefriends.pcsx2.utils.DiscordBridge;
 import kr.co.iefriends.pcsx2.utils.LogcatRecorder;
@@ -2127,7 +2127,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 		MaterialButton btnOpenDataDir = findViewById(R.id.btn_open_data_dir);
 		if (btnOpenDataDir != null) {
-			boolean providerEnabled = getResources().getBoolean(R.bool.armsx2_documents_provider_enabled);
+			boolean providerEnabled = getResources().getBoolean(R.bool.pcsx2oid_documents_provider_enabled);
 			if (providerEnabled) {
 				btnOpenDataDir.setVisibility(View.VISIBLE);
 				btnOpenDataDir.setOnClickListener(v -> openDataDirectoryInFilesApp());
@@ -2533,12 +2533,12 @@ public class SettingsActivity extends AppCompatActivity {
 
 		private void openDataDirectoryInFilesApp() {
 			try {
-				Uri rootDocumentUri = Armsx2DocumentsProvider.buildRootDocumentUri(this);
-				Uri rootUri = Armsx2DocumentsProvider.buildRootUri(this);
+				Uri rootDocumentUri = Pcsx2oidDocumentsProvider.buildRootDocumentUri(this);
+				Uri rootUri = Pcsx2oidDocumentsProvider.buildRootUri(this);
 				Uri initialTreeUri = rootDocumentUri;
 				try {
 					String rootDocId = DocumentsContract.getDocumentId(rootDocumentUri);
-					initialTreeUri = DocumentsContract.buildTreeDocumentUri(Armsx2DocumentsProvider.authorityFor(this), rootDocId);
+					initialTreeUri = DocumentsContract.buildTreeDocumentUri(Pcsx2oidDocumentsProvider.authorityFor(this), rootDocId);
 				} catch (Exception ignored) {}
 
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

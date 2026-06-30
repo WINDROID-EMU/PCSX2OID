@@ -144,9 +144,9 @@
             android:windowSoftInputMode="stateHidden|adjustResize" />
 
         <provider
-            android:name=".provider.Armsx2DocumentsProvider"
+            android:name=".provider.Pcsx2oidDocumentsProvider"
             android:authorities="${applicationId}.documents"
-            android:enabled="@bool/armsx2_documents_provider_enabled"
+            android:enabled="@bool/pcsx2oid_documents_provider_enabled"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS"

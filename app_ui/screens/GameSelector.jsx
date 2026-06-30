@@ -152,7 +152,7 @@ export default function GameSelector() {
                 No games yet
               </Text>
               <Text variant="bodyMedium" style={{ color: colors.onSurfaceVariant, marginBottom: 16 }}>
-                Point ARMSX2 to your library to see everything here.
+                Point PCSX2OID to your library to see everything here.
               </Text>
               <ThemedButton title="Choose games folder" onPress={() => {}} colors={colors} variant="outlined" />
             </View>

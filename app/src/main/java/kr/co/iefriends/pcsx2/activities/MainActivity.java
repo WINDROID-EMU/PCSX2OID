@@ -3102,12 +3102,29 @@ public class MainActivity extends AppCompatActivity {
         .setTitle(R.string.home_game_state_title)
                 .setItems(items, (dialog, which) -> {
                     if (which == 0) {
-                        pauseVmForStateOperation();
-                        boolean ok = NativeApp.saveStateToSlot(1);
-                        try {
-                            Toast.makeText(this, ok ? R.string.home_game_state_saved : R.string.home_game_state_save_failed, Toast.LENGTH_SHORT).show();
-                        } catch (Throwable ignored) {}
-                        resumeVmAfterStateOperation();
+                        String existingState = NativeApp.getGamePathSlot(1);
+                        if (existingState != null && !existingState.isEmpty()) {
+                            new MaterialAlertDialogBuilder(this)
+                                .setTitle(R.string.home_game_state_title)
+                                .setMessage(R.string.home_game_state_overwrite_confirm)
+                                .setPositiveButton(android.R.string.ok, (confirmDialog, whichButton) -> {
+                                    pauseVmForStateOperation();
+                                    boolean ok = NativeApp.saveStateToSlot(1);
+                                    try {
+                                        Toast.makeText(this, ok ? R.string.home_game_state_saved : R.string.home_game_state_save_failed, Toast.LENGTH_SHORT).show();
+                                    } catch (Throwable ignored) {}
+                                    resumeVmAfterStateOperation();
+                                })
+                                .setNegativeButton(android.R.string.cancel, null)
+                                .show();
+                        } else {
+                            pauseVmForStateOperation();
+                            boolean ok = NativeApp.saveStateToSlot(1);
+                            try {
+                                Toast.makeText(this, ok ? R.string.home_game_state_saved : R.string.home_game_state_save_failed, Toast.LENGTH_SHORT).show();
+                            } catch (Throwable ignored) {}
+                            resumeVmAfterStateOperation();
+                        }
                     } else if (which == 1) {
                         pauseVmForStateOperation();
                         boolean ok = NativeApp.loadStateFromSlot(1);

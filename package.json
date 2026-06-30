@@ -1,5 +1,5 @@
 {
-  "name": "armsx2-rn-host",
+  "name": "pcsx2oid-rn-host",
   "private": true,
   "version": "0.0.1",
   "main": "index.js",

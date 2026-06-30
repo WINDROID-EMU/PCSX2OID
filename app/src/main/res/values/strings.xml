@@ -132,7 +132,7 @@ Open it later from Settings → Open PCSX2 directory.</string>
     <string name="drawer_test_controller_input">Test Controller Input</string>
     <string name="drawer_about">About</string>
     <string name="drawer_settings">Settings</string>
-    <string name="drawer_about_armsx2">About PCSX2</string>
+    <string name="drawer_about_pcsx2oid">About PCSX2OID</string>
     <string name="drawer_import_cheats_picker_title">Select cheat file</string>
     <string name="drawer_import_textures_picker_title">Select texture archive (.zip)</string>
     <string name="drawer_ui_scale_label">On-screen UI scale</string>
@@ -407,6 +407,7 @@ Open it later from Settings → Open PCSX2 directory.</string>
     <string name="home_game_state_title">Game State</string>
     <string name="home_game_state_saved">State saved</string>
     <string name="home_game_state_save_failed">Failed to save state</string>
+    <string name="home_game_state_overwrite_confirm">A save state already exists in slot 1. Do you want to overwrite it?</string>
     <string name="home_game_state_loaded">State loaded</string>
     <string name="home_game_state_load_failed">Failed to load state</string>
     <string name="home_launching_game">Launching: %1$s</string>
